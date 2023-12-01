@@ -1,25 +1,28 @@
 
+fn twodigit(a: u8, b: u8) -> Option<u32> {
+    std::str::from_utf8(&[a, b]).ok()?.parse::<u32>().ok()
+}
+
 pub fn part1(input: &str) -> Option<u32> {
-    let numrange = b'0'..=b'9';
     input.lines().map(|l| {
         let b = l.as_bytes();
-        let fd = b.iter().position(|&z| numrange.contains(&z)).unwrap();
-        let ld = b.iter().rposition(|&z| numrange.contains(&z)).unwrap();
-        std::str::from_utf8(&[b[fd], b[ld]]).ok()?.parse::<u32>().ok()
+        let fd = b.iter().position(u8::is_ascii_digit)?;
+        let ld = b.iter().rposition(u8::is_ascii_digit)?;
+        twodigit(b[fd], b[ld])
     }).sum()
 }
 
 const WORD2NUM: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
 pub fn part2(input: &str) -> Option<u32> {
-    let numrange = b'0'..=b'9';
+    let mut digits = Vec::with_capacity(4);
     input.lines().map(|l| {
         let b = l.as_bytes();
-        let mut digits = Vec::new();
         let mut i = 0;
+        digits.clear();
         while i < b.len() {
             let z = b[i];
-            if numrange.contains(&z) {
+            if z.is_ascii_digit() {
                 digits.push(z);
             } else {
                 for (j, w) in WORD2NUM.iter().enumerate() {
@@ -32,7 +35,7 @@ pub fn part2(input: &str) -> Option<u32> {
             }
             i += 1;
         }
-        std::str::from_utf8(&[digits[0], digits[digits.len() - 1]]).ok()?.parse::<u32>().ok()
+        twodigit(digits[0], digits[digits.len() - 1])
     }).sum()
 }
 
