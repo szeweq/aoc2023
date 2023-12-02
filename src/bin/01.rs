@@ -1,6 +1,9 @@
 
 fn twodigit(a: u8, b: u8) -> Option<u32> {
-    std::str::from_utf8(&[a, b]).ok()?.parse::<u32>().ok()
+    if !a.is_ascii_digit() || !b.is_ascii_digit() {
+        return None;
+    }
+    Some(((a - b'0') * 10 + (b - b'0')) as u32)
 }
 
 pub fn part1(input: &str) -> Option<u32> {
