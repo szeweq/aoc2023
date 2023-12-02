@@ -35,15 +35,8 @@ pub fn part1(input: &str) -> Option<usize> {
     let bag = CubeSet { red: 12, green: 13, blue: 14 };
     let games = parse(input);
     let mut total = 0;
-    for (i, game) in games.enumerate() {
-        let mut can = true;
-        for cs in game {
-            if cs.red > bag.red || cs.green > bag.green || cs.blue > bag.blue {
-                can = false;
-                break;
-            }
-        }
-        if can {
+    for (i, mut game) in games.enumerate() {
+        if game.all(|cs| cs.red <= bag.red && cs.green <= bag.green && cs.blue <= bag.blue) {
             total += i + 1;
         }
     }
@@ -54,18 +47,18 @@ pub fn part2(input: &str) -> Option<usize> {
     let games = parse(input);
     let mut total = 0;
     for game in games {
-        let mut highest = CubeSet { red: 0, green: 0, blue: 0 };
-        for cs in game {
-            if cs.red > highest.red {
-                highest.red = cs.red;
+        let highest = game.fold(CubeSet { red: 0, green: 0, blue: 0 }, |mut hcs, cs| {
+            if cs.red > hcs.red {
+                hcs.red = cs.red;
             }
-            if cs.green > highest.green {
-                highest.green = cs.green;
+            if cs.green > hcs.green {
+                hcs.green = cs.green;
             }
-            if cs.blue > highest.blue {
-                highest.blue = cs.blue;
+            if cs.blue > hcs.blue {
+                hcs.blue = cs.blue;
             }
-        }
+            hcs
+        });
         total += highest.red as usize * highest.green as usize * highest.blue as usize;
     }
     Some(total)
