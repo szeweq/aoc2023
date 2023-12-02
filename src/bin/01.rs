@@ -1,5 +1,5 @@
 
-fn twodigit(a: u8, b: u8) -> Option<u32> {
+const fn twodigit(a: u8, b: u8) -> Option<u32> {
     if !a.is_ascii_digit() || !b.is_ascii_digit() {
         return None;
     }
@@ -36,7 +36,7 @@ pub fn part2(input: &str) -> Option<u32> {
                     if sz <= b.len() && &l[i..sz] == *w {
                         let z = b'1' + j as u8;
                         if fd.is_none() {
-                            fd = Some(z)
+                            fd = Some(z);
                         }
                         ld = Some(z);
                         break;
