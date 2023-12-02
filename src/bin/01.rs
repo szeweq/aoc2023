@@ -15,27 +15,34 @@ pub fn part1(input: &str) -> Option<u32> {
 const WORD2NUM: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
 pub fn part2(input: &str) -> Option<u32> {
-    let mut digits = Vec::with_capacity(4);
     input.lines().map(|l| {
         let b = l.as_bytes();
         let mut i = 0;
-        digits.clear();
+        let mut fd = None;
+        let mut ld = None;
         while i < b.len() {
             let z = b[i];
             if z.is_ascii_digit() {
-                digits.push(z);
+                if fd.is_none() {
+                    fd = Some(z);
+                }
+                ld = Some(z);
             } else {
                 for (j, w) in WORD2NUM.iter().enumerate() {
                     let sz = i + w.len();
                     if sz <= b.len() && &l[i..sz] == *w {
-                        digits.push(b'1' + j as u8);
+                        let z = b'1' + j as u8;
+                        if fd.is_none() {
+                            fd = Some(z)
+                        }
+                        ld = Some(z);
                         break;
                     }
                 }
             }
             i += 1;
         }
-        twodigit(digits[0], digits[digits.len() - 1])
+        twodigit(fd?, ld?)
     }).sum()
 }
 
