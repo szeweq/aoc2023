@@ -4,14 +4,14 @@ pub const EXAMPLE_DIR: &str = "examples";
 pub const INPUT_DIR: &str = "inputs";
 
 pub fn read_file_string(dir: &str, name: &str) -> Box<str> {
-    fs::read_to_string(format!("{}/{}.txt", dir, name)).map(|s| s.into()).unwrap()
+    fs::read_to_string(format!("{dir}/{name}.txt")).map(std::string::String::into_boxed_str).unwrap()
 }
 
 pub fn print_result<T: std::fmt::Display>(part: u32, func: impl FnOnce(&str) -> Option<T>, input: &str) {
     let tim = std::time::Instant::now();
     let result = func(input).unwrap();
     let el = tim.elapsed();
-    println!("> Part {}\n{}\n @ TIME: {:.2?}\n", part, result, el);
+    println!("> Part {part}\n{result}\n @ TIME: {el:.2?}\n");
 }
 
 #[macro_export]

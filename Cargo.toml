@@ -9,3 +9,6 @@ edition = "2021"
 
 [profile.release]
 lto = true
+
+[lints.clippy]
+nursery = "warn"
