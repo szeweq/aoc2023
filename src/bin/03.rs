@@ -114,9 +114,9 @@ pub fn part2(input: &str) -> Option<u32> {
                 }
             }
 
-            sides.iter().filter_map(|s| *s).for_each(|s| {
+            for s in sides.iter().filter_map(|s| *s) {
                 m.entry(s).and_modify(|z| z.put(sn)).or_insert(Gear::Single(sn));
-            });
+            }
         }
     }
     Some(m.iter().filter_map(|(_, v)| {
