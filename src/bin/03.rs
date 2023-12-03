@@ -36,15 +36,15 @@ impl Gear {
     }
 }
 
-fn numbers_in_line(line: &[u8]) -> impl Iterator<Item = (&[u8], usize)> + '_ {
+fn find_numbers(s: &[u8]) -> impl Iterator<Item = (&[u8], usize)> + '_ {
     let mut i = 0;
     std::iter::from_fn(move || {
-        if i >= line.len() {
+        if i >= s.len() {
             None
         } else {
-            let next_digit = i + line[i..].iter().position(u8::is_ascii_digit)?;
-            let num_end = line[next_digit..].iter().position(|c| !c.is_ascii_digit()).map_or(line.len(), |f| next_digit + f);
-            let num = line.get(next_digit..num_end);
+            let next_digit = i + s[i..].iter().position(u8::is_ascii_digit)?;
+            let num_end = s[next_digit..].iter().position(|c| !c.is_ascii_digit()).map_or(s.len(), |f| next_digit + f);
+            let num = s.get(next_digit..num_end);
             i = num_end;
             num.map(|n| (n, next_digit))
         }
@@ -63,7 +63,7 @@ pub fn part1(input: &str) -> Option<u32> {
     let height = g.data.len() / g.offset;
     Some(g.chunks().enumerate().flat_map(|(i, line)| {
         let cg = g.clone();
-        numbers_in_line(line).filter_map(move |(n, j)| {
+        find_numbers(line).filter_map(move |(n, j)| {
             let nlen = n.len();
             let mut sides = [None, None, None, None];
             if j > 0 {
@@ -93,7 +93,7 @@ pub fn part2(input: &str) -> Option<u32> {
     let height = g.data.len() / g.offset;
     let mut m: HashMap<usize, Gear> = HashMap::new();
     for (i, line) in g.chunks().enumerate() {
-        for (n, j) in numbers_in_line(line) {
+        for (n, j) in find_numbers(line) {
             let nlen = n.len();
             let mut sides = [None, None, None, None];
             let sn = g.line_at(i)[j..j+nlen].parse::<u32>().unwrap();
