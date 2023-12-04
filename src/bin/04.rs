@@ -8,8 +8,7 @@ fn parse_numbers(input: &str) -> Vec<u8> {
 
 fn parse_card_matches(input: &str) -> impl Iterator<Item = usize> + '_ {
     input.lines().map(|l| {
-        let (_, nums) = l.split_once(':').unwrap();
-        let (wn, yn) = nums.split_once('|').unwrap();
+        let (wn, yn) = l.split_once(':').and_then(|(_, nums)| nums.split_once('|')).unwrap();
         let wn = parse_numbers(wn);
         let yn = parse_numbers(yn);
         yn.iter().filter(|n| wn.contains(n)).count()
