@@ -8,7 +8,7 @@ struct Grid {
 impl Grid {
     fn from_str(s: &str) -> Self {
         let mut lines = s.lines().peekable();
-        let line_len = lines.peek().map(|l| l.len()).unwrap_or(0);
+        let line_len = lines.peek().map_or(0, |l| l.len());
         Self {
             data: lines.collect::<String>().into(),
             offset: line_len,
@@ -73,7 +73,7 @@ pub fn part1(input: &str) -> Option<u32> {
                 sides[1] = Some(line[j + nlen] == b'.');
             }
             if i > 0 {
-                sides[2] = Some(check_dots(cg.line_at(i - 1), j.saturating_sub(1), j+nlen+1))
+                sides[2] = Some(check_dots(cg.line_at(i - 1), j.saturating_sub(1), j+nlen+1));
             }
             if i + 1 < height {
                 sides[3] = Some(check_dots(cg.line_at(i + 1), j.saturating_sub(1), j+nlen+1));
