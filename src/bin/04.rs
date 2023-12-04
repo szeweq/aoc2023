@@ -1,7 +1,7 @@
 
 struct Card {
-    winning_numbers: Vec<u32>,
-    numbers: Vec<u32>,
+    winning_numbers: Vec<u8>,
+    numbers: Vec<u8>,
 }
 impl Card {
     fn matches(&self) -> usize {
@@ -9,8 +9,8 @@ impl Card {
     }
 }
 
-fn parse_numbers(input: &str) -> Vec<u32> {
-    let mut v: Vec<u32> = input.split(' ').filter(|s| !s.is_empty()).map(|s| s.trim().parse().unwrap()).collect();
+fn parse_numbers(input: &str) -> Vec<u8> {
+    let mut v: Vec<u8> = input.split(' ').filter(|s| !s.is_empty()).map(|s| s.trim().parse().unwrap()).collect();
     v.dedup();
     v.sort();
     v
@@ -28,12 +28,12 @@ fn parse_cards(input: &str) -> impl Iterator<Item = Card> + '_ {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    Some(parse_cards(input).map(|c| {
+    Some(parse_cards(input).filter_map(|c| {
         let cnt = c.matches();
         if cnt > 0 {
-            1 << (cnt - 1)
+            Some(1 << (cnt - 1))
         } else {
-            0
+            None
         }
     }).sum())
 }
