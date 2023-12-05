@@ -10,7 +10,7 @@ fn parse_range(s: &str) -> Option<(Range<usize>, isize)> {
 
 type Guide = [Vec<(Range<usize>, isize)>; 7];
 
-fn parse_guide(s: &str) -> (Vec<usize>, Guide) {
+fn parse_guide(s: &str) -> (Box<[usize]>, Guide) {
     let mut iter = s.lines();
     let seeds = iter.next().unwrap()
         .split_ascii_whitespace().skip(1).map(|s| s.parse::<usize>().unwrap());
@@ -44,7 +44,7 @@ fn seed_to_location(seed: usize, maps: &Guide) -> usize {
 
 pub fn part1(input: &str) -> Option<usize> {
     let (seeds, maps) = parse_guide(input);
-    seeds.into_iter().map(|seed| seed_to_location(seed, &maps)).min()
+    seeds.iter().map(|&seed| seed_to_location(seed, &maps)).min()
 }
 
 /// This is a bruteforce solution!
