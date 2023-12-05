@@ -1,6 +1,6 @@
 
 fn parse_numbers(input: &str) -> Vec<u8> {
-    let mut v: Vec<u8> = input.split_whitespace().map(|s| s.trim().parse().unwrap()).collect();
+    let mut v: Vec<u8> = input.split_ascii_whitespace().map(|s| s.parse().unwrap()).collect();
     v.dedup();
     v.sort_unstable();
     v
