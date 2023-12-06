@@ -42,6 +42,20 @@ fn seed_to_location(seed: usize, maps: &Guide) -> usize {
     })
 }
 
+fn location_to_seed(loc: usize, maps: &Guide) -> usize {
+    let seed = maps.iter().rev().fold(loc, |mut src, m| {
+        for (r, n) in m {
+            let r_from_src = (r.start.saturating_add_signed(*n))..(r.end.saturating_add_signed(*n));
+            if r_from_src.contains(&src) {
+                src = src.saturating_add_signed(-n);
+                break;
+            }
+        }
+        src
+    });
+    seed
+}
+
 pub fn part1(input: &str) -> Option<usize> {
     let (seeds, maps) = parse_guide(input);
     seeds.iter().map(|&seed| seed_to_location(seed, &maps)).min()
@@ -62,7 +76,16 @@ pub fn part2_bf_par(input: &str) -> Option<usize> {
         .min()
 }
 
-aoc2023::solve!(part1, part2_bf_par);
+/// This is an inverse (still bruteforce) solution
+pub fn part2_inv(input: &str) -> Option<usize> {
+    let (seeds, maps) = parse_guide(input);
+    let seed_ranges = seeds.chunks(2).map(|s| s[0]..(s[0]+s[1])).collect::<Box<_>>();
+    (0..).map(|i| (i, location_to_seed(i, &maps)))
+        .find_map(|(i, seed)| if seed_ranges.iter().any(|r| r.contains(&seed)) { Some(i) } else { None })
+}
+
+
+aoc2023::solve!(part1, part2_inv);
 
 #[cfg(test)]
 mod tests {
@@ -82,5 +105,10 @@ mod tests {
     #[test]
     fn test_part2_bf_par() {
         assert_ex!(part2_bf_par, 46);
+    }
+
+    #[test]
+    fn test_part2_inv() {
+        assert_ex!(part2_inv, 46);
     }
 }
