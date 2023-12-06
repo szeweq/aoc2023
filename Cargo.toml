@@ -13,3 +13,4 @@ lto = true
 
 [lints.clippy]
 nursery = "warn"
+must_use_candidate = "allow"
