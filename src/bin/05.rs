@@ -54,29 +54,26 @@ fn location_to_seed(loc: usize, maps: &Guide) -> usize {
     seed
 }
 
-pub fn part1(input: &str) -> Option<usize> {
-    let (seeds, maps) = parse_guide(input);
-    seeds.iter().map(|&seed| seed_to_location(seed, &maps)).min()
+pub fn part1((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
+    seeds.iter().map(|&seed| seed_to_location(seed, maps)).min()
 }
 
 /// This is a bruteforce solution!
-pub fn part2_bf(input: &str) -> Option<usize> {
-    let (seeds, maps) = parse_guide(input);
+pub fn part2_bf((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
     seeds.chunks(2)
-        .filter_map(|s| (s[0]..(s[0]+s[1])).map(|seed| seed_to_location(seed, &maps)).min())
+        .filter_map(|s| (s[0]..(s[0]+s[1])).map(|seed| seed_to_location(seed, maps)).min())
         .min()
 }
 
 /// This is an inverse (still bruteforce) solution
-pub fn part2_inv(input: &str) -> Option<usize> {
-    let (seeds, maps) = parse_guide(input);
+pub fn part2_inv((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
     let seed_ranges = seeds.chunks(2).map(|s| s[0]..(s[0]+s[1])).collect::<Box<_>>();
-    (0..).map(|i| (i, location_to_seed(i, &maps)))
+    (1..).map(|i| (i, location_to_seed(i, maps)))
         .find_map(|(i, seed)| if seed_ranges.iter().any(|r| r.contains(&seed)) { Some(i) } else { None })
 }
 
 
-aoc2023::solve!(part1, part2_inv);
+aoc2023::solve!(parse_guide, part1, part2_inv);
 
 #[cfg(test)]
 mod tests {
@@ -85,16 +82,16 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_ex!(part1, 35);
+        assert_ex!(parse_guide, part1, 35);
     }
 
     #[test]
     fn test_part2_bf() {
-        assert_ex!(part2_bf, 46);
+        assert_ex!(parse_guide, part2_bf, 46);
     }
 
     #[test]
     fn test_part2_inv() {
-        assert_ex!(part2_inv, 46);
+        assert_ex!(parse_guide, part2_inv, 46);
     }
 }
