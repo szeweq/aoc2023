@@ -6,17 +6,34 @@ fn parse_numbers(input: &str) -> Vec<u8> {
     v
 }
 
-fn parse_card_matches(input: &str) -> impl Iterator<Item = usize> + '_ {
+pub fn parse_card_matches(input: &str) -> Vec<usize> {
     input.lines().map(|l| {
         let (wn, yn) = l.split_once(':').and_then(|(_, nums)| nums.split_once('|')).unwrap();
         let wn = parse_numbers(wn);
         let yn = parse_numbers(yn);
-        yn.iter().filter(|n| wn.contains(n)).count()
-    })
+        let mut cnt = 0;
+        let (mut i, mut j) = (0, 0);
+        while i < wn.len() && j < yn.len() {
+            match wn[i].cmp(&yn[j]) {
+                std::cmp::Ordering::Less => {
+                    i += 1;
+                }
+                std::cmp::Ordering::Greater => {
+                    j += 1;
+                }
+                std::cmp::Ordering::Equal => {
+                    cnt += 1;
+                    i += 1;
+                    j += 1;
+                }
+            }
+        }
+        cnt
+    }).collect()
 }
 
-pub fn part1(input: &str) -> Option<usize> {
-    Some(parse_card_matches(input).filter_map(|cnt| {
+pub fn part1(input: &[usize]) -> Option<usize> {
+    Some(input.iter().filter_map(|&cnt| {
         if cnt > 0 {
             Some(1 << (cnt - 1))
         } else {
@@ -25,10 +42,9 @@ pub fn part1(input: &str) -> Option<usize> {
     }).sum())
 }
 
-pub fn part2(input: &str) -> Option<u32> {
-    let card_matches: Vec<_> = parse_card_matches(input).collect();
-    let mut num_owned = vec![1; card_matches.len()];
-    for (i, cnt) in card_matches.iter().enumerate() {
+pub fn part2(input: &[usize]) -> Option<u32> {
+    let mut num_owned = vec![1; input.len()];
+    for (i, cnt) in input.iter().enumerate() {
         for j in (i+1)..(num_owned.len().min(i+1+cnt)) {
             num_owned[j] += num_owned[i];
         }
@@ -36,7 +52,7 @@ pub fn part2(input: &str) -> Option<u32> {
     Some(num_owned.iter().sum())
 }
 
-aoc2023::solve!(part1, part2);
+aoc2023::solve!(parse_card_matches, part1, part2);
 
 #[cfg(test)]
 mod tests {
@@ -45,11 +61,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_ex!(part1, 13);
+        assert_ex!(parse_card_matches, part1, 13);
     }
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2, 30);
+        assert_ex!(parse_card_matches, part2, 30);
     }
 }
