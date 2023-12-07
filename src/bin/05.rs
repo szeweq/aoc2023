@@ -1,7 +1,5 @@
 use std::ops::Range;
 
-use rayon::iter::{ParallelIterator, IntoParallelIterator};
-
 fn parse_range(s: &str) -> Option<(Range<usize>, isize)> {
     let mut iter = s.splitn(3, ' ').map(|s| s.parse::<usize>().unwrap());
     let (r_dest, r_src, n) = (iter.next()?, iter.next()?, iter.next()?);
@@ -69,13 +67,6 @@ pub fn part2_bf(input: &str) -> Option<usize> {
         .min()
 }
 
-/// This is a bruteforce solution with parallelization (using rayon)
-pub fn part2_bf_par(input: &str) -> Option<usize> {
-    let (seeds, maps) = parse_guide(input);
-    seeds.chunks(2).filter_map(|s| (s[0]..(s[0]+s[1])).into_par_iter().map(|seed| seed_to_location(seed, &maps)).min())
-        .min()
-}
-
 /// This is an inverse (still bruteforce) solution
 pub fn part2_inv(input: &str) -> Option<usize> {
     let (seeds, maps) = parse_guide(input);
@@ -100,11 +91,6 @@ mod tests {
     #[test]
     fn test_part2_bf() {
         assert_ex!(part2_bf, 46);
-    }
-
-    #[test]
-    fn test_part2_bf_par() {
-        assert_ex!(part2_bf_par, 46);
     }
 
     #[test]
