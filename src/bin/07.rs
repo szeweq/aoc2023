@@ -19,8 +19,8 @@ fn parse_hand(line: &str, j: bool, checker: fn([u8; 5]) -> u8) -> ([u8; 6], usiz
     for i in 0..5 {
         h[i] = card_number(lb[i], j);
     }
-    let bid = line[6..].parse::<u16>().unwrap() as usize;
     ch[0] = checker(*h);
+    let bid = line[6..].parse::<u16>().unwrap() as usize;
     (ch, bid)
 }
 
