@@ -17,7 +17,7 @@ impl Grid {
     fn line_at(&self, i: usize) -> &str {
         &self.data[i * self.offset..(i + 1) * self.offset]
     }
-    fn chunks(&self) -> impl Iterator<Item = &[u8]> {
+    fn chunks(&self) -> std::slice::Chunks<'_, u8> {
         self.data.as_bytes().chunks(self.offset)
     }
 }
