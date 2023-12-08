@@ -58,4 +58,9 @@ macro_rules! assert_ex_part {
         let input = aoc2023::read_file_string(aoc2023::EXAMPLES, &format!("{}_{}", env!("CARGO_BIN_NAME"), $part));
         assert_eq!($solver(&input), Some($val))
     };
+    ($part:expr, $parser:ident, $solver:ident, $val:expr) => {
+        let input = aoc2023::read_file_string(aoc2023::EXAMPLES, &format!("{}_{}", env!("CARGO_BIN_NAME"), $part));
+        let parsed = $parser(&input);
+        assert_eq!($solver(&parsed), Some($val))
+    }
 }
