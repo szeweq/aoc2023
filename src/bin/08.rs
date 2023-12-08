@@ -1,1 +1,98 @@
 
+type Input<'a> = (&'a [u8], Vec<(&'a [u8; 3], [usize; 2])>);
+
+const unsafe fn triple(b: &str, i: usize) -> &[u8; 3] {
+    &*(b.as_ptr().add(i) as *const [u8; 3])
+}
+
+fn parse(input: &str) -> Input {
+    let mut iter = input.lines();
+    let rl = iter.next().unwrap().as_bytes();
+    iter.next().unwrap();
+    let mut m = iter.map(|l| {
+        if l.len() < 16 {
+            panic!("Dude...");
+        }
+        // SAFETY: The string has enough bytes
+        let kr = unsafe { triple(l, 0) };
+        let ar = unsafe { triple(l, 7) };
+        let br = unsafe { triple(l, 12) };
+        (kr, [ar, br])
+    }).collect::<Vec<_>>();
+    m.sort_unstable_by_key(|x| x.0);
+    let vi = (0..m.len()).map(|i| {
+        let (kk, [vl, vr]) = m[i];
+        let il = m.binary_search_by_key(&vl, |x| x.0).ok()?;
+        let ir = m.binary_search_by_key(&vr, |x| x.0).ok()?;
+        Some((kk, [il, ir]))
+    }).collect::<Option<Vec<_>>>().unwrap();
+    (rl, vi)
+}
+
+fn cycle_turns(r: &[u8]) -> impl Iterator<Item = bool> + '_ {
+    r.iter().cycle().map(|&b| match b {
+        b'L' => false,
+        b'R' => true,
+        _ => unreachable!()
+    })
+}
+
+pub fn part1((r, vi): &Input) -> Option<u32> {
+    let (mut current, mut steps) = (0, 0);
+    for x in cycle_turns(r) {
+        let p = vi[current].1;
+        let next = p[x as usize];
+        steps += 1;
+        if vi[next].0 == b"ZZZ" {
+            break;
+        }
+        current = next;
+    }
+    Some(steps)
+}
+
+pub fn part2((r, vi): &Input) -> Option<u64> {
+    let current = vi.iter().enumerate()
+        .filter_map(|(i, r)| if r.0[2] == b'A' { Some(i) } else { None });
+    let (mut steps, mut total) = (0, 1);
+    for mut cc in current {
+        for x in cycle_turns(r) {
+            let p = vi[cc].1;
+            let next = p[x as usize];
+            steps += 1;
+            if next == cc {
+                panic!("cycle: {:?} -> {:?}", cc, next);
+            }
+            if vi[next].0[2] == b'Z' {
+                break;
+            }
+            cc = next;
+        }
+        total = num::integer::lcm(total, steps);
+        steps = 0;
+    }
+    Some(total)
+}
+
+aoc2023::solve!(parse, part1, part2);
+
+#[cfg(test)]
+mod tests {
+    use aoc2023::assert_ex_part;
+    use super::*;
+
+    #[test]
+    fn test_part1_ex1() {
+        assert_ex_part!(1, parse, part1, 2);
+    }
+
+    #[test]
+    fn test_part1_ex2() {
+        assert_ex_part!(2, parse, part1, 6);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_ex_part!(3, parse, part2, 6);
+    }
+}
