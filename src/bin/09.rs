@@ -1,34 +1,23 @@
+use std::vec::IntoIter;
 
-fn calculate_diff_tree(n: Vec<i32>) -> Vec<Vec<i32>> {
+fn calculate_diff_tree(n: Vec<i32>) -> IntoIter<Vec<i32>> {
     let mut rows = vec![n];
     while let Some(lv) = rows.last().and_then(|v| v.iter().any(|x| *x != 0).then_some(v)) {
         rows.push(lv.windows(2).map(|w| w[1] - w[0]).collect());
     }
-    rows
+    rows.into_iter()
 }
 
-fn parse_nums(input: &str) -> impl Iterator<Item = Vec<Vec<i32>>> + '_ {
-    input.lines().map(|l| calculate_diff_tree(l.split_ascii_whitespace().map(|x| x.parse().unwrap()).collect()))
+fn parse_nums(input: &str) -> impl Iterator<Item = IntoIter<Vec<i32>>> + '_ {
+    input.lines().map(move |l| calculate_diff_tree(l.split_ascii_whitespace().map(|x| x.parse().unwrap()).collect()))
 }
 
 pub fn part1(input: &str) -> Option<i32> {
-    parse_nums(input).map(|mut rows| {
-        for i in (0..rows.len()-1).rev() {
-            let d = rows[i + 1].last()? + rows[i].last()?;
-            rows[i].push(d);
-        }
-        rows[0].last().copied()
-    }).sum()
+    Some(parse_nums(input).map(|rows| rows.map(|v| v[v.len() - 1]).sum::<i32>()).sum())
 }
 
 pub fn part2(input: &str) -> Option<i32> {
-    parse_nums(input).map(|mut rows| {
-        for i in (0..rows.len()-1).rev() {
-            let d = rows[i][0] - rows[i + 1][0];
-            rows[i].insert(0, d);
-        }
-        Some(rows[0][0])
-    }).sum()
+    Some(parse_nums(input).map(|rows| rows.map(|v| v[0]).rfold(0, |acc, x| x - acc)).sum())
 }
 
 aoc2023::solve!(part1, part2);
