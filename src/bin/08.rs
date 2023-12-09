@@ -54,8 +54,8 @@ pub fn part1((r, vi): &Input) -> Option<u32> {
 pub fn part2((r, vi): &Input) -> Option<u64> {
     let current = vi.iter().enumerate()
         .filter_map(|(i, r)| if r.0[2] == b'A' { Some(i) } else { None });
-    let (mut steps, mut total) = (0, 1);
-    for mut cc in current {
+    Some(current.fold(1, |total, mut cc| {
+        let mut steps = 0;
         for x in cycle_turns(r) {
             let p = vi[cc].1;
             let next = p[x as usize];
@@ -68,10 +68,8 @@ pub fn part2((r, vi): &Input) -> Option<u64> {
             }
             cc = next;
         }
-        total = num::integer::lcm(total, steps);
-        steps = 0;
-    }
-    Some(total)
+        num::integer::lcm(total, steps)
+    }))
 }
 
 aoc2023::solve!(parse, part1, part2);
