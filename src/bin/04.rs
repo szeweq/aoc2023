@@ -33,13 +33,7 @@ pub fn parse_card_matches(input: &str) -> Vec<usize> {
 }
 
 pub fn part1(input: &[usize]) -> Option<usize> {
-    Some(input.iter().filter_map(|&cnt| {
-        if cnt > 0 {
-            Some(1 << (cnt - 1))
-        } else {
-            None
-        }
-    }).sum())
+    Some(input.iter().filter_map(|&cnt| (cnt > 0).then_some(1 << (cnt - 1))).sum())
 }
 
 pub fn part2(input: &[usize]) -> Option<u32> {
