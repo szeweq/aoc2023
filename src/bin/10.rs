@@ -13,51 +13,39 @@ impl Grid {
             offset: line_len,
         }
     }
-    fn find_s(&mut self) -> Option<(usize, Box<[u8]>)> {
+    fn find_s(&mut self) -> Option<(usize, u8)> {
         let spos = self.data.iter().position(|&c| c == b'S')?;
-        let mut dirflag = [0u8; 4];
-        let mut di = 0;
-        if let Some(b'|' | b'7' | b'F') = spos.checked_sub(self.offset).and_then(|p| self.data.get(p)) {
-            dirflag[di] = 0;
-            di += 1;
-        }
-        if let Some(b'|' | b'L' | b'J') = self.data.get(spos + self.offset) {
-            dirflag[di] = 1;
-            di += 1;
-        }
-        if let Some(b'-' | b'L' | b'F') = spos.checked_sub(1).and_then(|p| self.data.get(p)) {
-            dirflag[di] = 2;
-            di += 1;
-        }
-        if let Some(b'-' | b'7' | b'J') = self.data.get(spos + 1) {
-            dirflag[di] = 3;
-            di += 1;
-        }
-        Some((spos, dirflag[..di].into()))
+        let dir = if let Some(b'|' | b'7' | b'F') = spos.checked_sub(self.offset).and_then(|p| self.data.get(p)) {
+            0
+        } else if let Some(b'|' | b'L' | b'J') = self.data.get(spos + self.offset) {
+            1
+        } else if let Some(b'-' | b'L' | b'F') = spos.checked_sub(1).and_then(|p| self.data.get(p)) {
+            2
+        } else if let Some(b'-' | b'7' | b'J') = self.data.get(spos + 1) {
+            3
+        } else {
+            return None;
+        };
+        Some((spos, dir))
     }
-    fn traverse_loop(&self, p: usize, dirs: &[u8]) -> (usize, HashSet<usize>) {
+    fn traverse_loop(&self, p: usize, dir: u8) -> (usize, HashSet<usize>) {
         let go = self.offset as isize;
         let ap = [-go, go, -1, 1];
+        let mut av = (p, dir);
         let mut set = HashSet::new();
         set.insert(p);
-        let mut av = dirs.iter().map(|&df| (p, df)).collect::<Vec<_>>();
-        let (mut i, mut j) = (0, 1);
         loop {
-            let (cp, dirflag) = av[i];
-            let Some(np) = cp.checked_add_signed(ap[dirflag as usize]) else { break; };
+            let Some(np) = av.0.checked_add_signed(ap[av.1 as usize]) else { break; };
             let Some(nextdir) = self.data.get(np)
-                .and_then(|&pb| next_dir(dirflag, pb)) else { break; };
+                .and_then(|&pb| next_dir(av.1, pb)) else { break; };
             if set.insert(np) {
-                av[i] = (np, nextdir);
+                av = (np, nextdir);
             } else {
                 break;
             }
-            i = (i + 1) % av.len();
-            if i == 0 {
-                j += 1;
-            }
         }
-        (j, set)
+        
+        (set.len() / 2, set)
     }
 }
 
@@ -73,17 +61,17 @@ const fn next_dir(dbit: u8, pb: u8) -> Option<u8> {
 
 pub fn part1(input: &str) -> Option<usize> {
     let mut grid = Grid::from_str(input);
-    let (spos, dirs) = grid.find_s()?;
-    let (steps, _) = grid.traverse_loop(spos, &dirs);
+    let (spos, dir) = grid.find_s()?;
+    let (steps, _) = grid.traverse_loop(spos, dir);
     Some(steps)
 }
 
 pub fn part2(input: &str) -> Option<u32> {
     let mut grid = Grid::from_str(input);
-    let (spos, dirs) = grid.find_s()?;
-    let (_, set) = grid.traverse_loop(spos, &dirs);
+    let (spos, dir) = grid.find_s()?;
+    let (_, set) = grid.traverse_loop(spos, dir);
     let (mut total, mut inside) = (0, false);
-    let valid = dirs.contains(&0);
+    let valid = dir == 0;
     for p in 0..grid.data.len() {
         if set.contains(&p) {
             match grid.data[p] {
