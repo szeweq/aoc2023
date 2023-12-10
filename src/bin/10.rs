@@ -35,26 +35,29 @@ impl Grid {
         }
         Some((spos, dirflag[..di].into()))
     }
-    fn traverse_loop(&self, p: usize, dirs: &[u8]) -> (Vec<(usize, u8, u32)>, HashSet<usize>) {
+    fn traverse_loop(&self, p: usize, dirs: &[u8]) -> (usize, HashSet<usize>) {
         let go = self.offset as isize;
         let ap = [-go, go, -1, 1];
         let mut set = HashSet::new();
         set.insert(p);
-        let mut av = dirs.iter().map(|&df| (p, df, 0)).collect::<Vec<_>>();
-        let mut i = 0;
+        let mut av = dirs.iter().map(|&df| (p, df)).collect::<Vec<_>>();
+        let (mut i, mut j) = (0, 1);
         loop {
-            let (cp, dirflag, d) = av[i];
+            let (cp, dirflag) = av[i];
             let Some(np) = cp.checked_add_signed(ap[dirflag as usize]) else { break; };
             let Some(nextdir) = self.data.get(np)
                 .and_then(|&pb| next_dir(dirflag, pb)) else { break; };
             if set.insert(np) {
-                av[i] = (np, nextdir, d + 1);
+                av[i] = (np, nextdir);
             } else {
                 break;
             }
             i = (i + 1) % av.len();
+            if i == 0 {
+                j += 1;
+            }
         }
-        (av, set)
+        (j, set)
     }
 }
 
@@ -68,11 +71,11 @@ const fn next_dir(dbit: u8, pb: u8) -> Option<u8> {
     })
 }
 
-pub fn part1(input: &str) -> Option<u32> {
+pub fn part1(input: &str) -> Option<usize> {
     let mut grid = Grid::from_str(input);
     let (spos, dirs) = grid.find_s()?;
-    let (av, _) = grid.traverse_loop(spos, &dirs);
-    av.into_iter().map(|a| a.2).max()
+    let (steps, _) = grid.traverse_loop(spos, &dirs);
+    Some(steps)
 }
 
 pub fn part2(input: &str) -> Option<u32> {
