@@ -28,8 +28,8 @@ fn parse_guide(s: &str) -> (Box<[usize]>, Guide) {
     (seeds.collect(), maps)
 }
 
-fn seed_to_location(seed: usize, maps: &Guide) -> usize {
-    maps.iter().fold(seed, |mut dest, m| {
+fn guide_pos(pos: usize, maps: &Guide) -> usize {
+    maps.iter().fold(pos, |mut dest, m| {
         for (r, n) in m {
             if r.contains(&dest) {
                 dest = dest.saturating_add_signed(*n);
@@ -40,40 +40,32 @@ fn seed_to_location(seed: usize, maps: &Guide) -> usize {
     })
 }
 
-fn location_to_seed(loc: usize, maps: &Guide) -> usize {
-    let seed = maps.iter().rev().fold(loc, |mut src, m| {
-        for (r, n) in m {
-            let r_from_src = (r.start.saturating_add_signed(*n))..(r.end.saturating_add_signed(*n));
-            if r_from_src.contains(&src) {
-                src = src.saturating_add_signed(-n);
-                break;
-            }
-        }
-        src
-    });
-    seed
-}
-
 pub fn part1((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
-    seeds.iter().map(|&seed| seed_to_location(seed, maps)).min()
-}
-
-/// This is a bruteforce solution!
-pub fn part2_bf((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
-    seeds.chunks(2)
-        .filter_map(|s| (s[0]..(s[0]+s[1])).map(|seed| seed_to_location(seed, maps)).min())
-        .min()
+    seeds.iter().map(|&seed| guide_pos(seed, maps)).min()
 }
 
 /// This is an inverse (still bruteforce) solution
-pub fn part2_inv((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
-    let seed_ranges = seeds.chunks(2).map(|s| s[0]..(s[0]+s[1])).collect::<Box<_>>();
-    (1..).map(|i| (i, location_to_seed(i, maps)))
-        .find_map(|(i, seed)| if seed_ranges.iter().any(|r| r.contains(&seed)) { Some(i) } else { None })
+pub fn part2((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
+    let seed_ranges = seeds.chunks(2)
+        .map(|s| s[0]..(s[0]+s[1]))
+        .collect::<Box<_>>();
+    let mut inv_guide = maps.clone();
+    for gv in &mut inv_guide {
+        for (r, n) in gv {
+            *r = (r.start.saturating_add_signed(*n))..(r.end.saturating_add_signed(*n));
+            *n = -(*n);
+        }
+    }
+    inv_guide.reverse();
+    (1..).map(|i| (i, guide_pos(i, &inv_guide)))
+        .find_map(|(i, seed)| seed_ranges.iter()
+            .any(|r| r.contains(&seed))
+            .then_some(i)
+        )
 }
 
 
-aoc2023::solve!(parse_guide, part1, part2_inv);
+aoc2023::solve!(parse_guide, part1, part2);
 
 #[cfg(test)]
 mod tests {
@@ -86,12 +78,7 @@ mod tests {
     }
 
     #[test]
-    fn test_part2_bf() {
-        assert_ex!(parse_guide, part2_bf, 46);
-    }
-
-    #[test]
-    fn test_part2_inv() {
-        assert_ex!(parse_guide, part2_inv, 46);
+    fn test_part2() {
+        assert_ex!(parse_guide, part2, 46);
     }
 }
