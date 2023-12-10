@@ -1,8 +1,7 @@
 use std::{collections::HashMap, rc::Rc};
 
-#[derive(Clone)]
 struct Grid {
-    data: Rc<str>,
+    data: Box<str>,
     offset: usize,
 }
 impl Grid {
@@ -59,9 +58,9 @@ fn star_pos(s: &str, from: usize, to: usize) -> Option<usize> {
 }
 
 pub fn part1(input: &str) -> Option<u32> {
-    let g = Grid::from_str(input);
+    let g = Rc::from(Grid::from_str(input));
     let height = g.data.len() / g.offset;
-    Some(g.chunks().enumerate().flat_map(|(i, line)| {
+    Some(g.clone().chunks().enumerate().flat_map(|(i, line)| {
         let cg = g.clone();
         find_numbers(line).filter_map(move |(n, j)| {
             let nlen = n.len();
@@ -69,7 +68,7 @@ pub fn part1(input: &str) -> Option<u32> {
             if j > 0 {
                 sides[0] = Some(line[j - 1] == b'.');
             }
-            if j + nlen < g.offset {
+            if j + nlen < cg.offset {
                 sides[1] = Some(line[j + nlen] == b'.');
             }
             if i > 0 {
