@@ -35,28 +35,20 @@ impl Grid {
         }
         Some((spos, dirflag[..di].into()))
     }
-    fn route(&self, p: usize, dirflag: u8) -> Option<(usize, u8)> {
-        let go = self.offset as isize;
-        let dp = [-go, go, -1, 1][dirflag as usize];
-        let np = p.checked_add_signed(dp)?;
-        let nextdir = self.data.get(np)
-            .and_then(|&pb| next_dir(dirflag, pb))?;
-        Some((np, nextdir))
-    }
     fn traverse_loop(&self, p: usize, dirs: &[u8]) -> (Vec<(usize, u8, u32)>, HashSet<usize>) {
+        let go = self.offset as isize;
+        let ap = [-go, go, -1, 1];
         let mut set = HashSet::new();
         set.insert(p);
         let mut av = dirs.iter().map(|&df| (p, df, 0)).collect::<Vec<_>>();
         let mut i = 0;
         loop {
             let (cp, dirflag, d) = av[i];
-            let nd = d + 1;
-            if let Some((np, nextbit)) = self.route(cp, dirflag) {
-                if set.insert(np) {
-                    av[i] = (np, nextbit, nd);
-                } else {
-                    break;
-                }
+            let Some(np) = cp.checked_add_signed(ap[dirflag as usize]) else { break; };
+            let Some(nextdir) = self.data.get(np)
+                .and_then(|&pb| next_dir(dirflag, pb)) else { break; };
+            if set.insert(np) {
+                av[i] = (np, nextdir, d + 1);
             } else {
                 break;
             }
