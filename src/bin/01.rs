@@ -20,10 +20,8 @@ const WORD2NUM: [&str; 9] = ["one", "two", "three", "four", "five", "six", "seve
 pub fn part2(input: &str) -> Option<u32> {
     input.lines().map(|l| {
         let b = l.as_bytes();
-        let mut i = 0;
-        let mut fd = None;
-        let mut ld = None;
-        while i < b.len() {
+        let (mut fd, mut ld) = (None, None);
+        for i in 0..b.len() {
             let z = b[i];
             if z.is_ascii_digit() {
                 if fd.is_none() {
@@ -43,7 +41,6 @@ pub fn part2(input: &str) -> Option<u32> {
                     }
                 }
             }
-            i += 1;
         }
         twodigit(fd?, ld?)
     }).sum()
