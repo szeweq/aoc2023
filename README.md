@@ -3,6 +3,9 @@ Here you can find solvers with example inputs. I'm trying my best to provide the
 
 There are no explainations or comments to these solutions. Also there are mangled variable names. It will be corrected later (maybe when AoC 2023 will end).
 
+## Disclaimer
+This repository is checked with the latest stable version of Rust.
+
 ## Calendar
 |  |  |  |  |  |  |  |
 |--|--|--|--|--|--|--|
