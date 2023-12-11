@@ -23,8 +23,8 @@ fn parse_grid(input: &str) -> Grid {
 }
 
 fn space_points(vpos: &mut [[usize; 2]], w: usize, h: usize, sz: usize) {
-    for (r, d) in [(0..w, 0), (0..h, 1)] {
-        for i in r.rev() {
+    for (d, z) in [w, h].into_iter().enumerate() {
+        for i in (0..z).rev() {
             if vpos.iter().all(|p| p[d] != i) {
                 vpos.iter_mut().filter(|p| p[d] > i).for_each(|p| p[d] += sz);
             }
