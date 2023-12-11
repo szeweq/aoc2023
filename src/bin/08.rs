@@ -1,8 +1,8 @@
 
-type Input<'a> = (&'a [u8], Vec<(&'a [u8; 3], [usize; 2])>);
+type Input<'a> = (&'a [u8], Vec<([u8; 3], [usize; 2])>);
 
-const unsafe fn triple(b: &str, i: usize) -> &[u8; 3] {
-    &*(b.as_ptr().add(i) as *const [u8; 3])
+const unsafe fn triple(b: &str, i: usize) -> [u8; 3] {
+    *(b.as_ptr().add(i) as *const [u8; 3])
 }
 
 fn parse(input: &str) -> Input {
@@ -17,11 +17,11 @@ fn parse(input: &str) -> Input {
         let kr = unsafe { triple(l, 0) };
         let ar = unsafe { triple(l, 7) };
         let br = unsafe { triple(l, 12) };
-        (kr, [ar, br])
+        (kr, ar, br)
     }).collect::<Vec<_>>();
     m.sort_unstable_by_key(|x| x.0);
     let vi = (0..m.len()).map(|i| {
-        let (kk, [vl, vr]) = m[i];
+        let (kk, vl, vr) = m[i];
         let il = m.binary_search_by_key(&vl, |x| x.0).ok()?;
         let ir = m.binary_search_by_key(&vr, |x| x.0).ok()?;
         Some((kk, [il, ir]))
@@ -43,7 +43,7 @@ pub fn part1((r, vi): &Input) -> Option<u32> {
         let p = vi[current].1;
         let next = p[x as usize];
         steps += 1;
-        if vi[next].0 == b"ZZZ" {
+        if vi[next].0 == *b"ZZZ" {
             break;
         }
         current = next;
