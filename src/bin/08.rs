@@ -20,8 +20,7 @@ fn parse(input: &str) -> Input {
         (kr, ar, br)
     }).collect::<Vec<_>>();
     m.sort_unstable_by_key(|x| x.0);
-    let vi = (0..m.len()).map(|i| {
-        let (kk, vl, vr) = m[i];
+    let vi = m.iter().map(|&(kk, vl, vr)| {
         let il = m.binary_search_by_key(&vl, |x| x.0).ok()?;
         let ir = m.binary_search_by_key(&vr, |x| x.0).ok()?;
         Some((kk, [il, ir]))
