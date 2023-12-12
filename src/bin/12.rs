@@ -33,7 +33,7 @@ fn possible(l: &[u8], n: &[u8]) -> usize {
         let cnt = cnt as usize;
         let mut grp = 0;
         for (i, &c) in vl.iter().enumerate() {
-            if c != b'.' { grp += 1; } else { grp = 0; }
+            if c == b'.' { grp = 0; } else { grp += 1; }
             if c != b'#' {
                 newstate[i + 1] += newstate[i];
             }
