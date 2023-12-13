@@ -18,9 +18,9 @@ fn reflect_row(v: &[&[u8]], diff: usize) -> usize {
     let (w, h) = (v[0].len(), v.len());
     for y in 1..h {
         let msz = y.min(h - y);
-        let rd: usize = (0..msz).map(|sz| {
-            (0..w).filter(|&x| v[y - sz - 1][x] != v[y + sz][x]).count()
-        }).sum();
+        let rd = (0..msz).flat_map(|sz| {
+            (0..w).filter(move |&x| v[y - sz - 1][x] != v[y + sz][x])
+        }).count();
         if rd == diff {
             return y;
         }
@@ -31,9 +31,9 @@ fn reflect_col(v: &[&[u8]], diff: usize) -> usize {
     let (w, h) = (v[0].len(), v.len());
     for x in 1..w {
         let msz = x.min(w - x);
-        let cd: usize = (0..msz).map(|sz| {
-            (0..h).filter(|&y| v[y][x - sz - 1] != v[y][x + sz]).count()
-        }).sum();
+        let cd = (0..msz).flat_map(|sz| {
+            (0..h).filter(move |&y| v[y][x - sz - 1] != v[y][x + sz])
+        }).count();
         if cd == diff {
             return x;
         }
