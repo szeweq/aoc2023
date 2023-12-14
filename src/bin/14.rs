@@ -31,7 +31,7 @@ impl Grid {
 }
 
 fn partition(vc: &[Pt], y: u32, x: u32) -> usize {
-    vc.partition_point(|[cy, cx]| *cy < y || (*cy == y && *cx < x))
+    vc.partition_point(|&[cy, cx]| cy < y || (cy == y && cx < x))
 }
 
 fn collapse_north(vr: &mut [Pt], vc: &[Pt]) {
@@ -39,7 +39,7 @@ fn collapse_north(vr: &mut [Pt], vc: &[Pt]) {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
         let next = vc[..ci].iter().chain(&vr[..i])
-            .filter_map(|[cy, cx]| (*cx == x && *cy < y).then_some(*cy + 1))
+            .filter_map(|&[cy, cx]| (cx == x && cy < y).then_some(cy + 1))
             .max().unwrap_or(0);
         if next < y {
             vr[i] = [next, x];
@@ -51,7 +51,7 @@ fn collapse_east(vr: &mut [Pt], vc: &[Pt], lx: u32) {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
         let next = vc[ci..].iter().chain(&vr[i..])
-            .filter_map(|[cy, cx]| (*cy == y && *cx > x).then_some(*cx - 1))
+            .filter_map(|&[cy, cx]| (cy == y && cx > x).then_some(cx - 1))
             .min().unwrap_or(lx);
         if next > x {
             vr[i] = [y, next];
@@ -63,7 +63,7 @@ fn collapse_south(vr: &mut [Pt], vc: &[Pt], ly: u32) {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
         let next = vc[ci..].iter().chain(&vr[i..])
-            .filter_map(|[cy, cx]| (*cx == x && *cy > y).then_some(*cy - 1))
+            .filter_map(|&[cy, cx]| (cx == x && cy > y).then_some(cy - 1))
             .min().unwrap_or(ly);
         if next > y {
             vr[i] = [next, x];
@@ -75,7 +75,7 @@ fn collapse_west(vr: &mut [Pt], vc: &[Pt]) {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
         let next = vc[..ci].iter().chain(&vr[..i])
-            .filter_map(|[cy, cx]| (*cy == y && *cx < x).then_some(*cx + 1))
+            .filter_map(|&[cy, cx]| (cy == y && cx < x).then_some(cx + 1))
             .max().unwrap_or(0);
         if next < x {
             vr[i] = [y, next];
