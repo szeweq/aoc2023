@@ -33,16 +33,36 @@ impl Grid {
 fn partition(vc: &[Pt], y: u32, x: u32) -> usize {
     vc.partition_point(|&[cy, cx]| cy < y || (cy == y && cx < x))
 }
+fn optmin(a: Option<u32>, b: Option<u32>, or: u32) -> u32 {
+    match (a, b) {
+        (Some(a), Some(b)) => a.min(b),
+        (Some(a), None) => a,
+        (None, Some(b)) => b,
+        (None, None) => or
+    }
+}
+fn optmax(a: Option<u32>, b: Option<u32>, or: u32) -> u32 {
+    match (a, b) {
+        (Some(a), Some(b)) => a.max(b),
+        (Some(a), None) => a,
+        (None, Some(b)) => b,
+        (None, None) => or
+    }
+}
 
 fn collapse_north(vr: &mut [Pt], vc: &[Pt]) {
     for i in 0..vr.len() {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
-        let next = vc[..ci].iter().chain(&vr[..i])
-            .filter_map(|&[cy, cx]| (cx == x && cy < y).then_some(cy + 1))
-            .max().unwrap_or(0);
+        let next_cube = vc[..ci].iter().rfind(|c| c[1] == x).map(|c| c[0] + 1);
+        let next_round = vr[..i].iter().rfind(|r| r[1] == x).map(|r| r[0] + 1);
+        let next = optmax(next_cube, next_round, 0);
         if next < y {
-            vr[i] = [next, x];
+            let ni = partition(&vr[..i], next, x);
+            if ni < i {
+                vr[ni..=i].rotate_right(1);
+            }
+            vr[ni][0] = next;
         }
     }
 }
@@ -50,11 +70,15 @@ fn collapse_east(vr: &mut [Pt], vc: &[Pt], lx: u32) {
     for i in (0..vr.len()).rev() {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
-        let next = vc[ci..].iter().chain(&vr[i..])
-            .filter_map(|&[cy, cx]| (cy == y && cx > x).then_some(cx - 1))
-            .min().unwrap_or(lx);
+        let next_cube = vc[ci..].iter().find(|&c| c[0] == y && c[1] > x).map(|c| c[1] - 1);
+        let next_round = vr[i+1..].iter().find(|&r| r[0] == y && r[1] > x).map(|r| r[1] - 1);
+        let next = optmin(next_cube, next_round, lx);
         if next > x {
-            vr[i] = [y, next];
+            let ni = partition(&vr[i..], y, next) + i;
+            if ni > i {
+                vr[i..ni].rotate_left(1);
+            }
+            vr[ni-1][1] = next;
         }
     }
 }
@@ -62,11 +86,15 @@ fn collapse_south(vr: &mut [Pt], vc: &[Pt], ly: u32) {
     for i in (0..vr.len()).rev() {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
-        let next = vc[ci..].iter().chain(&vr[i..])
-            .filter_map(|&[cy, cx]| (cx == x && cy > y).then_some(cy - 1))
-            .min().unwrap_or(ly);
+        let next_cube = vc[ci..].iter().find(|&c| c[1] == x).map(|c| c[0] - 1);
+        let next_round = vr[i+1..].iter().find(|&r| r[1] == x).map(|r| r[0] - 1);
+        let next = optmin(next_cube, next_round, ly);
         if next > y {
-            vr[i] = [next, x];
+            let ni = partition(&vr[i..], next, x) + i;
+            if ni > i {
+                vr[i..ni].rotate_left(1);
+            }
+            vr[ni-1][0] = next;
         }
     }
 }
@@ -74,24 +102,24 @@ fn collapse_west(vr: &mut [Pt], vc: &[Pt]) {
     for i in 0..vr.len() {
         let [y, x] = vr[i];
         let ci = partition(vc, y, x);
-        let next = vc[..ci].iter().chain(&vr[..i])
-            .filter_map(|&[cy, cx]| (cy == y && cx < x).then_some(cx + 1))
-            .max().unwrap_or(0);
+        let next_cube = vc[..ci].iter().rfind(|c| c[0] == y && c[1] < x).map(|c| c[1] + 1);
+        let next_round = vr[..i].iter().rfind(|r| r[0] == y && r[1] < x).map(|r| r[1] + 1);
+        let next = optmax(next_cube, next_round, 0);
         if next < x {
-            vr[i] = [y, next];
+            let ni = partition(&vr[..i], y, next);
+            if ni < i {
+                vr[ni..=i].rotate_right(1);
+            }
+            vr[ni][1] = next;
         }
     }
 }
 
 fn collapse_cycle(vr: &mut [Pt], vc: &[Pt], lx: u32, ly: u32) {
     collapse_north(vr, vc);
-    vr.sort_unstable();
     collapse_west(vr, vc);
-    vr.sort_unstable();
     collapse_south(vr, vc, ly);
-    vr.sort_unstable();
     collapse_east(vr, vc, lx);
-    vr.sort_unstable();
 }
 
 fn calc_damage(vr: Vec<Pt>, h: u32) -> u32 {
