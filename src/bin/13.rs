@@ -16,11 +16,21 @@ fn parse_grids(input: &str) -> impl Iterator<Item = &[&[u8]]> + '_ {
 
 fn reflect_row(v: &[&[u8]], diff: usize) -> usize {
     let (w, h) = (v[0].len(), v.len());
-    for y in 1..h {
-        let msz = y.min(h - y);
-        let rd = (0..msz).flat_map(|sz| {
-            (0..w).filter(move |&x| v[y - sz - 1][x] != v[y + sz][x])
-        }).count();
+    'o: for y in 1..h {
+        let mut rd = 0;
+        let (mut sa, mut sb) = (y - 1, y);
+        loop {
+            let (va, vb) = (v[sa], v[sb]);
+            for x in 0..w {
+                if va[x] != vb[x] {
+                    rd += 1;
+                    if rd > diff { continue 'o; } // Stop the count!
+                }
+            }
+            if sa == 0 || sb == h - 1 { break; }
+            sa -= 1;
+            sb += 1;
+        }
         if rd == diff {
             return y;
         }
@@ -28,12 +38,21 @@ fn reflect_row(v: &[&[u8]], diff: usize) -> usize {
     0
 }
 fn reflect_col(v: &[&[u8]], diff: usize) -> usize {
-    let (w, h) = (v[0].len(), v.len());
-    for x in 1..w {
-        let msz = x.min(w - x);
-        let cd = (0..msz).flat_map(|sz| {
-            (0..h).filter(move |&y| v[y][x - sz - 1] != v[y][x + sz])
-        }).count();
+    let w = v[0].len();
+    'o: for x in 1..w {
+        let mut cd = 0;
+        let (mut sa, mut sb) = (x - 1, x);
+        loop {
+            for &y in v {
+                if y[sa] != y[sb] {
+                    cd += 1;
+                    if cd > diff { continue 'o; } // Stop the count!
+                }
+            }
+            if sa == 0 || sb == w - 1 { break; }
+            sa -= 1;
+            sb += 1;
+        }
         if cd == diff {
             return x;
         }
