@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, num::NonZeroUsize};
 
 type Row<'a> = (Cow<'a, [u8]>, Box<[u8]>);
 
@@ -26,7 +26,8 @@ fn possible(l: &[u8], n: &[u8]) -> usize {
     oldstate[0] = 1;
 
     for i in 1..vl.len() {
-        if vl[i] != b'#' { oldstate[i] = 1; } else { break; }
+        if vl[i] == b'#' { break; }
+        oldstate[i] = 1;
     }
 
     for &cnt in n {
@@ -48,15 +49,15 @@ fn possible(l: &[u8], n: &[u8]) -> usize {
     oldstate[sz - 1]
 }
 
-fn solve(input: &str, part2: bool) -> Option<usize> {
-    Some(parse_groups(input, part2).map(|(l, n)| possible(&l, &n)).sum())
+fn solve(input: &str, part2: bool) -> Option<NonZeroUsize> {
+    NonZeroUsize::new(parse_groups(input, part2).map(|(l, n)| possible(&l, &n)).sum())
 }
 
-pub fn part1(input: &str) -> Option<usize> {
+pub fn part1(input: &str) -> Option<NonZeroUsize> {
     solve(input, false)
 }
 
-pub fn part2(input: &str) -> Option<usize> {
+pub fn part2(input: &str) -> Option<NonZeroUsize> {
     solve(input, true)
 }
 
@@ -64,16 +65,16 @@ aoc2023::solve!(part1, part2);
 
 #[cfg(test)]
 mod tests {
-    use aoc2023::assert_ex;
+    use aoc2023::assert_ex_opt;
     use super::*;
 
     #[test]
     fn test_part1() {
-        assert_ex!(part1, 21);
+        assert_ex_opt!(part1, NonZeroUsize::new(21));
     }
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2, 525152);
+        assert_ex_opt!(part2, NonZeroUsize::new(525_152));
     }
 }

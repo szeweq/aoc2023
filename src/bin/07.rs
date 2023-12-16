@@ -122,16 +122,16 @@ aoc2023::solve!(part1, part2);
 
 #[cfg(test)]
 mod tests {
-    use aoc2023::assert_ex;
+    use aoc2023::assert_ex_opt;
     use super::*;
 
     #[test]
     fn test_part1() {
-        assert_ex!(part1, 6440);
+        assert_ex_opt!(part1, NonZeroUsize::new(6440));
     }
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2, 5905);
+        assert_ex_opt!(part2, NonZeroUsize::new(5905));
     }
 }
