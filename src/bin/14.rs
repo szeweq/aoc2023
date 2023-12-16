@@ -19,9 +19,10 @@ impl Grid {
         let o = self.offset as u32;
         let (mut round_rocks, mut cube_rocks) = (Vec::with_capacity(8), Vec::with_capacity(8));
         for (i, &c) in self.data.iter().enumerate() {
+            let i = i as u32;
             match c {
-                b'O' => round_rocks.push([i as u32 / o, i as u32 % o]),
-                b'#' => cube_rocks.push([i as u32 / o, i as u32 % o]),
+                b'O' => round_rocks.push([i / o, i % o]),
+                b'#' => cube_rocks.push([i / o, i % o]),
                 _ => (),
             }
         }
@@ -143,13 +144,12 @@ pub fn part2(input: &str) -> Option<u32> {
         collapse_cycle(&mut round_rocks, &cube_rocks, w - 1, h - 1);
         if map.contains_key(&round_rocks) {
             break;
-        } else {
-            map.insert(round_rocks.clone(), i);
         }
+        map.insert(round_rocks.clone(), i);
     }
     let cstart = map[&round_rocks];
     let cycle_len = map.len() - cstart;
-    let ckey = (1000000000 - cstart) % cycle_len + cstart;
+    let ckey = (1_000_000_000 - cstart) % cycle_len + cstart;
     map.into_iter().find(|(_, i)| *i == ckey).map(|(v, _)| calc_damage(v, h))
 }
 
