@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 
 fn parse_grids(input: &str) -> impl Iterator<Item = &[&[u8]]> + '_ {
     let mut l = input.lines();
@@ -60,15 +62,15 @@ fn reflect_col(v: &[&[u8]], diff: usize) -> usize {
     0
 }
 
-fn solve(input: &str, diff: usize) -> Option<usize> {
-    Some(parse_grids(input).map(|v| 100 * reflect_row(v, diff) + reflect_col(v, diff)).sum())
+fn solve(input: &str, diff: usize) -> Option<NonZeroUsize> {
+    NonZeroUsize::new(parse_grids(input).map(|v| 100 * reflect_row(v, diff) + reflect_col(v, diff)).sum())
 }
 
-pub fn part1(input: &str) -> Option<usize> {
+pub fn part1(input: &str) -> Option<NonZeroUsize> {
     solve(input, 0)
 }
 
-pub fn part2(input: &str) -> Option<usize> {
+pub fn part2(input: &str) -> Option<NonZeroUsize> {
     solve(input, 1)
 }
 
