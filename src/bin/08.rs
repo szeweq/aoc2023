@@ -2,7 +2,7 @@
 type Input<'a> = (&'a [u8], Vec<([u8; 3], [usize; 2])>);
 
 const unsafe fn triple(b: &str, i: usize) -> [u8; 3] {
-    *(b.as_ptr().add(i) as *const [u8; 3])
+    *b.as_ptr().add(i).cast::<[u8; 3]>()
 }
 
 fn parse(input: &str) -> Input {
