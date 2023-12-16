@@ -10,9 +10,7 @@ fn parse(input: &str) -> Input {
     let rl = iter.next().unwrap().as_bytes();
     iter.next().unwrap();
     let mut m = iter.map(|l| {
-        if l.len() < 16 {
-            panic!("Dude...");
-        }
+        assert!(l.len() >= 16, "Dude...");
         // SAFETY: The string has enough bytes
         let kr = unsafe { triple(l, 0) };
         let ar = unsafe { triple(l, 7) };
@@ -59,9 +57,7 @@ pub fn part2((r, vi): &Input) -> Option<u64> {
             let p = vi[cc].1;
             let next = p[x as usize];
             steps += 1;
-            if next == cc {
-                panic!("cycle: {:?} -> {:?}", cc, next);
-            }
+            assert!(next != cc, "cycle: {cc:?} -> {next:?}");
             if vi[next].0[2] == b'Z' {
                 break;
             }
