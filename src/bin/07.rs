@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 
 const fn card_number(b: u8, j: bool) -> u8 {
     match b {
@@ -102,17 +104,17 @@ fn check_hand_joker(mut hand: [u8; 5]) -> u8 {
     r
 }
 
-fn solve(input: &str, j: bool, checker: fn([u8; 5]) -> u8) -> Option<usize> {
+fn solve(input: &str, j: bool, checker: fn([u8; 5]) -> u8) -> Option<NonZeroUsize> {
     let mut hands = input.lines().map(|l| parse_hand(l, j, checker)).collect::<Vec<_>>();
     hands.sort_unstable_by(|a, b| a.0.cmp(&b.0));
-    Some(hands.into_iter().enumerate().map(|(i, h)| (1 + i) * h.1).sum())
+    NonZeroUsize::new(hands.into_iter().enumerate().map(|(i, h)| (1 + i) * h.1).sum())
 }
 
-pub fn part1(input: &str) -> Option<usize> {
+pub fn part1(input: &str) -> Option<NonZeroUsize> {
     solve(input, false, check_hand)
 }
 
-pub fn part2(input: &str) -> Option<usize> {
+pub fn part2(input: &str) -> Option<NonZeroUsize> {
     solve(input, true, check_hand_joker)
 }
 
