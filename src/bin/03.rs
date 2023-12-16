@@ -95,7 +95,7 @@ pub fn part2(input: &str) -> Option<u32> {
         for (n, j) in find_numbers(line) {
             let nlen = n.len();
             let mut sides = [None, None, None, None];
-            let sn = g.line_at(i)[j..j+nlen].parse::<u32>().unwrap();
+            let sn = g.line_at(i)[j..j+nlen].parse::<u32>().ok()?;
             if j > 0 && line[j - 1] == b'*' {
                 sides[0] = Some(i * g.offset + j - 1);
             }
