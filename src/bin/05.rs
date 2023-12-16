@@ -23,21 +23,24 @@ fn parse_guide(s: &str) -> (Box<[usize]>, Guide) {
         }
     }
     for m in &mut maps {
-        m.sort_by_key(|(r, _)| r.start);
+        m.sort_unstable_by_key(|(r, _)| r.start);
     }
     (seeds.collect(), maps)
 }
 
+fn range_cmp(r: &Range<usize>, n: usize) -> std::cmp::Ordering {
+    if r.contains(&n) {
+        std::cmp::Ordering::Equal
+    } else {
+        r.start.cmp(&n)
+    }
+}
+
 fn guide_pos(pos: usize, maps: &Guide) -> usize {
-    maps.iter().fold(pos, |mut dest, m| {
-        for (r, n) in m {
-            if r.contains(&dest) {
-                dest = dest.saturating_add_signed(*n);
-                break;
-            }
-        }
-        dest
-    })
+    maps.iter().fold(pos, |dest, m|
+        m.binary_search_by(|(r, _)| range_cmp(r, dest))
+            .map_or(dest, |fr| dest.wrapping_add_signed(m[fr].1))
+    )
 }
 
 pub fn part1((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
@@ -46,21 +49,21 @@ pub fn part1((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
 
 /// This is an inverse (still bruteforce) solution
 pub fn part2((seeds, maps): &(Box<[usize]>, Guide)) -> Option<usize> {
-    let seed_ranges = seeds.chunks(2)
+    let mut seed_ranges = seeds.chunks(2)
         .map(|s| s[0]..(s[0]+s[1]))
         .collect::<Box<_>>();
+    seed_ranges.sort_unstable_by_key(|r| r.start);
     let mut inv_guide = maps.clone();
     for gv in &mut inv_guide {
-        for (r, n) in gv {
-            *r = (r.start.saturating_add_signed(*n))..(r.end.saturating_add_signed(*n));
+        for (r, n) in &mut *gv {
+            *r = (r.start.wrapping_add_signed(*n))..(r.end.wrapping_add_signed(*n));
             *n = -(*n);
         }
+        gv.sort_unstable_by_key(|(r, _)| r.start);
     }
     inv_guide.reverse();
     (1..).map(|i| (i, guide_pos(i, &inv_guide)))
-        .find_map(|(i, seed)| seed_ranges.iter()
-            .any(|r| r.contains(&seed))
-            .then_some(i)
+        .find_map(|(i, seed)| seed_ranges.binary_search_by(|r| range_cmp(r, seed)).ok().map(|_| i)
         )
 }
 
