@@ -9,7 +9,7 @@ impl Grid {
         let mut lines = s.lines().peekable();
         let line_len = lines.peek().map_or(0, |l| l.len());
         Self {
-            data: lines.flat_map(str::as_bytes).copied().collect::<Box<_>>(),
+            data: lines.flat_map(str::as_bytes).map(|&c| c - b'0').collect::<Box<_>>(),
             offset: line_len,
         }
     }
@@ -45,7 +45,7 @@ impl Grid {
                 let mut np = p;
                 for dist in 1..=dmax {
                     if let Some(op) = self.next_pos(np, nd) {
-                        costsum += (self.data[op] - b'0') as usize;
+                        costsum += self.data[op] as usize;
                         if dist >= dmin {
                             let ncost = cost + costsum;
                             let cache_idx = (op << 1) | odir as usize;
