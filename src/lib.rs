@@ -73,3 +73,15 @@ macro_rules! assert_ex_part {
         assert_eq!($solver(&parsed), Some($val))
     }
 }
+#[macro_export]
+macro_rules! assert_ex_part_opt {
+    ($part:expr, $solver:ident, $val:expr) => {
+        let input = aoc2023::read_file_string(concat!("examples/", env!("CARGO_BIN_NAME"), "_", $part, ".txt"));
+        assert_eq!($solver(&input), $val)
+    };
+    ($part:expr, $parser:ident, $solver:ident, $val:expr) => {
+        let input = aoc2023::read_file_string(concat!("examples/", env!("CARGO_BIN_NAME"), "_", $part, ".txt"));
+        let parsed = $parser(&input);
+        assert_eq!($solver(&parsed), $val)
+    }
+}
