@@ -12,15 +12,15 @@ impl Grid {
             offset: line_len,
         }
     }
-    fn next_pos(&self, p: usize, dir: u8) -> Option<usize> {
+    const fn next_pos(&self, p: usize, dir: u8) -> Option<usize> {
         // 0 = up, 1 = right, 2 = down, 3 = left
-        match dir {
-            0 => p.checked_sub(self.offset),
-            1 => ((p + 1) % self.offset != 0).then_some(p + 1),
-            2 => (p < self.data.len() - self.offset).then_some(p + self.offset),
-            3 => (p % self.offset != 0).then_some(p - 1),
-            _ => None
-        }
+        Some(match dir {
+            0 if p > self.offset => p - self.offset,
+            1 if (p + 1) % self.offset != 0 => p + 1,
+            2 if p < self.data.len() - self.offset => p + self.offset,
+            3 if p % self.offset != 0 => p - 1,
+            _ => { return None }
+        })
     }
     #[inline]
     fn step(&self, q: &mut Vec<(usize, u8)>, p: usize, dir: u8) {
