@@ -29,8 +29,8 @@ impl Grid {
         // Cache for vertical and horizontal directions
         let mut ccache = vec![usize::MAX; 2 * self.data.len()];
         let mut q = std::collections::BinaryHeap::new();
+        q.push((Rev(0), 0, 0));
         q.push((Rev(0), 0, 1));
-        q.push((Rev(0), 0, 2));
         while let Some((Rev(cost), p, dir)) = q.pop() {
             if p == self.data.len() - 1 {
                 return NonZeroUsize::new(cost);
@@ -39,7 +39,8 @@ impl Grid {
                 continue
             }
             visit[p] |= 1u8 << dir;
-            for nd in [dir ^ 1, dir ^ 3] {
+            let odir = dir ^ 1;
+            for nd in [odir, odir ^ 2] {
                 let mut costsum = 0;
                 let mut np = p;
                 for dist in 1..=dmax {
@@ -47,10 +48,10 @@ impl Grid {
                         costsum += (self.data[op] - b'0') as usize;
                         if dist >= dmin {
                             let ncost = cost + costsum;
-                            let cache_idx = (op << 1) | (nd & 1) as usize;
+                            let cache_idx = (op << 1) | odir as usize;
                             if ccache[cache_idx] > ncost {
                                 ccache[cache_idx] = ncost;
-                                q.push((Rev(ncost), op, nd));
+                                q.push((Rev(ncost), op, odir));
                             }
                         }
                         np = op;
