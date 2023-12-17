@@ -25,6 +25,7 @@ impl Grid {
     }
     fn run(&self, dmin: usize, dmax: usize) -> Option<NonZeroUsize> {
         use std::cmp::Reverse as Rev;
+        let lp = self.data.len() - 1;
         let mut visit = vec![0u8; self.data.len()];
         // Cache for vertical and horizontal directions
         let mut ccache = vec![usize::MAX; 2 * self.data.len()];
@@ -32,7 +33,7 @@ impl Grid {
         q.push((Rev(0), 0, 0));
         q.push((Rev(0), 0, 1));
         while let Some((Rev(cost), p, dir)) = q.pop() {
-            if p == self.data.len() - 1 {
+            if p == lp {
                 return NonZeroUsize::new(cost);
             }
             if visit[p] & (1u8 << dir) != 0 {
