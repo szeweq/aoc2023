@@ -28,24 +28,23 @@ impl Grid {
         };
         Some((spos, dir))
     }
-    fn traverse_loop(&self, p: usize, dir: u8) -> (usize, HashSet<usize>) {
+    fn traverse_loop(&self, p: usize, dir: u8) -> (usize, Vec<usize>) {
         let go = self.offset as isize;
         let ap = [-go, go, -1, 1];
         let mut av = (p, dir);
-        let mut set = HashSet::new();
-        set.insert(p);
+        let mut v = vec![p];
         loop {
             let Some(np) = av.0.checked_add_signed(ap[av.1 as usize]) else { break; };
             let Some(nextdir) = self.data.get(np)
                 .and_then(|&pb| next_dir(av.1, pb)) else { break; };
-            if set.insert(np) {
-                av = (np, nextdir);
-            } else {
+            if np == p {
                 break;
             }
+            v.push(np);
+            av = (np, nextdir);
         }
         
-        (set.len() / 2, set)
+        (v.len() / 2, v)
     }
 }
 
@@ -69,9 +68,10 @@ pub fn part1(input: &str) -> Option<usize> {
 pub fn part2(input: &str) -> Option<u32> {
     let mut grid = Grid::from_str(input);
     let (spos, dir) = grid.find_s()?;
-    let (_, set) = grid.traverse_loop(spos, dir);
+    let (_, v) = grid.traverse_loop(spos, dir);
     let (mut total, mut inside) = (0, false);
     let valid = dir == 0;
+    let set = v.into_iter().collect::<HashSet<_>>();
     for p in 0..grid.data.len() {
         if set.contains(&p) {
             match grid.data[p] {
