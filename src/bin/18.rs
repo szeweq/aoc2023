@@ -9,8 +9,11 @@ fn map_part1(l: &str) -> (u8, u64) {
         b'U' => 3,
         _ => unreachable!()
     };
-    let (a, _) = l[2..].split_once(' ').unwrap();
-    let num = a.parse::<u8>().unwrap() as u64;
+    let num = match bl[2] {
+        b'1' => if bl[3] == b'0' { 10 } else { 1 },
+        b'2'..=b'9' => bl[2] - b'0',
+        _ => unreachable!()
+    } as u64;
     (dir, num)
 }
 fn map_part2(l: &str) -> (u8, u64) {
