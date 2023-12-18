@@ -13,7 +13,7 @@ impl Grid {
             offset: line_len,
         }
     }
-    fn find_s(&mut self) -> Option<(usize, u8)> {
+    fn find_s(&self) -> Option<(usize, u8)> {
         let spos = self.data.iter().position(|&c| c == b'S')?;
         let dir = if let Some(b'|' | b'7' | b'F') = spos.checked_sub(self.offset).and_then(|p| self.data.get(p)) {
             0
@@ -28,7 +28,7 @@ impl Grid {
         };
         Some((spos, dir))
     }
-    fn traverse_loop(&self, p: usize, dir: u8) -> (usize, Vec<usize>) {
+    fn traverse_loop(&self, p: usize, dir: u8) -> Vec<usize> {
         let go = self.offset as isize;
         let ap = [-go, go, -1, 1];
         let mut av = (p, dir);
@@ -43,8 +43,7 @@ impl Grid {
             v.push(np);
             av = (np, nextdir);
         }
-        
-        (v.len() / 2, v)
+        v
     }
 }
 
@@ -59,16 +58,16 @@ const fn next_dir(dbit: u8, pb: u8) -> Option<u8> {
 }
 
 pub fn part1(input: &str) -> Option<usize> {
-    let mut grid = Grid::from_str(input);
+    let grid = Grid::from_str(input);
     let (spos, dir) = grid.find_s()?;
-    let (steps, _) = grid.traverse_loop(spos, dir);
-    Some(steps)
+    let steps = grid.traverse_loop(spos, dir);
+    Some(steps.len() / 2)
 }
 
 pub fn part2(input: &str) -> Option<u32> {
-    let mut grid = Grid::from_str(input);
+    let grid = Grid::from_str(input);
     let (spos, dir) = grid.find_s()?;
-    let (_, v) = grid.traverse_loop(spos, dir);
+    let v = grid.traverse_loop(spos, dir);
     let (mut total, mut inside) = (0, false);
     let valid = dir == 0;
     let set = v.into_iter().collect::<HashSet<_>>();
