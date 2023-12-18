@@ -36,7 +36,7 @@ fn solve(input: &str, mapper: fn(&str) -> (u8, u64)) -> Option<NonZeroU64> {
         perim += num;
         spos = npos;
     }
-    NonZeroU64::new((perim / 2).wrapping_add_signed(sum / 2) + 1)
+    NonZeroU64::new(perim.wrapping_add_signed(sum) / 2 + 1)
 }
 
 pub fn part1(input: &str) -> Option<NonZeroU64> {
