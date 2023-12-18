@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-struct Grid {
+pub struct Grid {
     data: Box<[u8]>,
     offset: usize,
 }
@@ -57,16 +57,18 @@ const fn next_dir(dbit: u8, pb: u8) -> Option<u8> {
     })
 }
 
-pub fn part1(input: &str) -> Option<usize> {
-    let grid = Grid::from_str(input);
-    let (spos, dir) = grid.find_s()?;
+pub fn parse_grid(s: &str) -> (Grid, usize, u8) {
+    let grid = Grid::from_str(s);
+    let (spos, dir) = grid.find_s().unwrap();
+    (grid, spos, dir)
+}
+
+pub fn part1(&(ref grid, spos, dir): &(Grid, usize, u8)) -> Option<usize> {
     let steps = grid.traverse_loop(spos, dir);
     Some(steps.len() / 2)
 }
 
-pub fn part2(input: &str) -> Option<u32> {
-    let grid = Grid::from_str(input);
-    let (spos, dir) = grid.find_s()?;
+pub fn part2(&(ref grid, spos, dir): &(Grid, usize, u8)) -> Option<u32> {
     let v = grid.traverse_loop(spos, dir);
     let (mut total, mut inside) = (0, false);
     let valid = dir == 0;
@@ -88,7 +90,7 @@ pub fn part2(input: &str) -> Option<u32> {
     Some(total)
 }
 
-aoc2023::solve!(part1, part2);
+aoc2023::solve!(parse_grid, part1, part2);
 
 #[cfg(test)]
 mod tests {
@@ -97,26 +99,26 @@ mod tests {
 
     #[test]
     fn test_part1_ex1() {
-        assert_ex_part!(1, part1, 4);
+        assert_ex_part!(1, parse_grid, part1, 4);
     }
 
     #[test]
     fn test_part1_ex2() {
-        assert_ex_part!(2, part1, 8);
+        assert_ex_part!(2, parse_grid, part1, 8);
     }
 
     #[test]
     fn test_part2_ex3() {
-        assert_ex_part!(3, part2, 4);
+        assert_ex_part!(3, parse_grid, part2, 4);
     }
 
     #[test]
     fn test_part2_ex4() {
-        assert_ex_part!(4, part2, 8);
+        assert_ex_part!(4, parse_grid, part2, 8);
     }
 
     #[test]
     fn test_part2_ex5() {
-        assert_ex_part!(5, part2, 10);
+        assert_ex_part!(5, parse_grid, part2, 10);
     }
 }
