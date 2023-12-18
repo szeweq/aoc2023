@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 
 pub struct Grid {
     data: Box<[u8]>,
@@ -28,11 +27,11 @@ impl Grid {
         };
         Some((spos, dir))
     }
-    fn traverse_loop(&self, p: usize, dir: u8) -> Vec<usize> {
+    fn traverse_loop(&self, p: usize, dir: u8) -> Vec<u8> {
         let go = self.offset as isize;
         let ap = [-go, go, -1, 1];
         let mut av = (p, dir);
-        let mut v = vec![p];
+        let mut v = vec![dir];
         loop {
             let Some(np) = av.0.checked_add_signed(ap[av.1 as usize]) else { break; };
             let Some(nextdir) = self.data.get(np)
@@ -40,7 +39,7 @@ impl Grid {
             if np == p {
                 break;
             }
-            v.push(np);
+            v.push(nextdir);
             av = (np, nextdir);
         }
         v
@@ -68,26 +67,23 @@ pub fn part1(&(ref grid, spos, dir): &(Grid, usize, u8)) -> Option<usize> {
     Some(steps.len() / 2)
 }
 
-pub fn part2(&(ref grid, spos, dir): &(Grid, usize, u8)) -> Option<u32> {
+pub fn part2(&(ref grid, spos, dir): &(Grid, usize, u8)) -> Option<usize> {
     let v = grid.traverse_loop(spos, dir);
-    let (mut total, mut inside) = (0, false);
-    let valid = dir == 0;
-    let set = v.into_iter().collect::<HashSet<_>>();
-    for p in 0..grid.data.len() {
-        if set.contains(&p) {
-            match grid.data[p] {
-                b'|' | b'J' | b'L' => inside = !inside,
-                b'S' if valid => inside = !inside,
-                _ => {}
-            }
-        } else {
-            total += inside as u32;
-        }
-        if p % grid.offset == grid.offset - 1 {
-            inside = false;
-        }
+    let perim = v.len();
+    let mut xy = (0, 0);
+    let mut sum = 0isize;
+    for dir in v {
+        let nxy = match dir {
+            0 => (xy.0, xy.1 - 1),
+            1 => (xy.0, xy.1 + 1),
+            2 => (xy.0 - 1, xy.1),
+            3 => (xy.0 + 1, xy.1),
+            _ => unreachable!(),
+        };
+        sum += (xy.1 + nxy.1) * (xy.0 - nxy.0);
+        xy = nxy;
     }
-    Some(total)
+    Some(sum.unsigned_abs().abs_diff(perim) / 2 + 1)
 }
 
 aoc2023::solve!(parse_grid, part1, part2);
