@@ -72,7 +72,7 @@ pub fn part1(&(ref rv, ref xv, iin): &Input) -> Option<u64> {
             }
         }
         if i == 1 {
-            total += xmas[0] as u64 + xmas[1] as u64 + xmas[2] as u64 + xmas[3] as u64;
+            total += xmas.iter().fold(0u64, |acc, x| acc + (*x as u64));
         }
     }
     Some(total)
@@ -85,8 +85,7 @@ pub fn part2(&(ref rv, _, iin): &Input) -> Option<u64> {
         match i {
             0 => {}
             1 => {
-                let comb = xmas.into_iter().fold(1u64, |acc, x| acc * (x.1 - x.0 + 1) as u64);
-                total += comb;
+                total += xmas.into_iter().fold(1u64, |acc, x| acc * (x.1 - x.0 + 1) as u64);
             }
             _ => {
                 for &(a, ni) in rv[i - 2].iter() {
