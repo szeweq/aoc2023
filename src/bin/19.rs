@@ -1,12 +1,13 @@
 
-macro_rules! find_index {
-    ($v:ident, $s:expr) => {
-        $v.iter().position(|&n| n == $s).map_or_else(|| {
-            let i = $v.len();
-            $v.push($s);
+fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
+    match v.binary_search_by_key(&s, |(z, _)| z) {
+        Ok(i) => v[i].1,
+        Err(ins) => {
+            let i = v.len();
+            v.insert(ins, (s, i));
             i
-        }, |i| i)
-    };
+        }
+    }
 }
 
 type Input = (Vec<Vec<(Option<(u8, bool, u16)>, usize)>>, Vec<[u16; 4]>, usize);
@@ -14,21 +15,16 @@ type Input = (Vec<Vec<(Option<(u8, bool, u16)>, usize)>>, Vec<[u16; 4]>, usize);
 pub fn parse(input: &str) -> Input {
     let mut il = input.lines();
     let mut rv = vec![];
-    let mut name_indices = vec!["R", "A"];
+    let mut name_indices = vec![("A", 1), ("R", 0)];
     for l in il.by_ref().take_while(|l| !l.is_empty()) {
-        let br_idx = l.find('{').unwrap();
-        let ln = find_index!(name_indices, &l[..br_idx]);
-        let mut uv = vec![];
-        for s in l[br_idx+1..].split(',') {
-            if s.ends_with('}') {
-                let s = find_index!(name_indices, &s[..s.len()-1]);
-                uv.push((None, s));
+        let (name, data) = l.split_once('{').unwrap();
+        let ln = find_index(&mut name_indices, name);
+        let uv = data.split(',').map(|s| {
+            if let Some(s) = s.strip_suffix('}') {
+                (None, find_index(&mut name_indices, s))
             } else {
                 let sb = s.as_bytes();
                 let (a, b) = (sb[0], sb[1]);
-                let (n, x) = s[2..].split_once(':').unwrap();
-                let x = find_index!(name_indices, x);
-                let n = n.parse::<u16>().expect(n);
                 let a = match a {
                     b'x' => 0,
                     b'm' => 1,
@@ -36,9 +32,11 @@ pub fn parse(input: &str) -> Input {
                     b's' => 3,
                     _ => unreachable!(),
                 };
-                uv.push((Some((a, b == b'>', n)), x));
+                let (n, x) = s[2..].split_once(':').unwrap();
+                let n = n.parse::<u16>().expect(n);
+                (Some((a, b == b'>', n)), find_index(&mut name_indices, x))
             }
-        }
+        }).collect();
         rv.push((ln, uv));
     }
     rv.sort_unstable_by_key(|z| z.0);
@@ -51,7 +49,8 @@ pub fn parse(input: &str) -> Input {
         }
         xmas
     }).collect();
-    (fixed_rv, xv, name_indices.iter().position(|&x| x == "in").unwrap())
+    let iin = find_index(&mut name_indices, "in");
+    (fixed_rv, xv, iin)
 }
 
 pub fn part1(&(ref rv, ref xv, iin): &Input) -> Option<u64> {
