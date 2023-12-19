@@ -1,1 +1,137 @@
 
+macro_rules! find_index {
+    ($v:ident, $s:expr) => {
+        $v.iter().position(|&n| n == $s).map_or_else(|| {
+            let i = $v.len();
+            $v.push($s);
+            i
+        }, |i| i)
+    };
+}
+
+type Input = (Vec<Vec<(Option<(u8, bool, u16)>, usize)>>, Vec<[u16; 4]>, usize);
+
+pub fn parse(input: &str) -> Input {
+    let mut il = input.lines();
+    let mut rv = vec![];
+    let mut name_indices = vec!["R", "A"];
+    for l in il.by_ref().take_while(|l| !l.is_empty()) {
+        let br_idx = l.find('{').unwrap();
+        let ln = find_index!(name_indices, &l[..br_idx]);
+        let mut uv = vec![];
+        for s in l[br_idx+1..].split(',') {
+            if s.ends_with('}') {
+                let s = find_index!(name_indices, &s[..s.len()-1]);
+                uv.push((None, s));
+            } else {
+                let sb = s.as_bytes();
+                let (a, b) = (sb[0], sb[1]);
+                let (n, x) = s[2..].split_once(':').unwrap();
+                let x = find_index!(name_indices, x);
+                let n = n.parse::<u16>().expect(n);
+                let a = match a {
+                    b'x' => 0,
+                    b'm' => 1,
+                    b'a' => 2,
+                    b's' => 3,
+                    _ => unreachable!(),
+                };
+                uv.push((Some((a, b == b'>', n)), x));
+            }
+        }
+        rv.push((ln, uv));
+    }
+    rv.sort_unstable_by_key(|z| z.0);
+    let fixed_rv = rv.into_iter().map(|z| z.1)
+        .collect::<Vec<_>>();
+    let xv = il.map(|l| {
+        let mut xmas = [0u16; 4];
+        for (i, n) in l[1..l.len()-1].splitn(4, ',').enumerate() {
+            xmas[i] = n[2..].parse().expect(n);
+        }
+        xmas
+    }).collect();
+    (fixed_rv, xv, name_indices.iter().position(|&x| x == "in").unwrap())
+}
+
+pub fn part1(&(ref rv, ref xv, iin): &Input) -> Option<u64> {
+    let mut total = 0;
+    for xmas in xv {
+        let mut i = iin;
+        while i >= 2 {
+            for &(a, ni) in rv[i - 2].iter() {
+                let ma = match a {
+                    Some((x, false, n)) => xmas[x as usize] < n,
+                    Some((x, true, n)) => xmas[x as usize] > n,
+                    None => true
+                };
+                if ma {
+                    i = ni;
+                    break;
+                }
+            }
+        }
+        if i == 1 {
+            total += xmas[0] as u64 + xmas[1] as u64 + xmas[2] as u64 + xmas[3] as u64;
+        }
+    }
+    Some(total)
+}
+
+pub fn part2(&(ref rv, _, iin): &Input) -> Option<u64> {
+    let mut total = 0;
+    let mut r_xmas = vec![(iin, [(1u16, 4000u16); 4])];
+    while let Some((i, mut xmas)) = r_xmas.pop() {
+        match i {
+            0 => {}
+            1 => {
+                let comb = xmas.into_iter().fold(1u64, |acc, x| acc * (x.1 - x.0 + 1) as u64);
+                total += comb;
+            }
+            _ => {
+                for &(a, ni) in rv[i - 2].iter() {
+                    match a {
+                        Some((x, false, n)) => {
+                            if xmas[x as usize].0 < n {
+                                let mut nx = xmas;
+                                nx[x as usize].1 = nx[x as usize].1.min(n - 1);
+                                r_xmas.push((ni, nx));
+                            }
+                            xmas[x as usize].0 = n;
+                        }
+                        Some((x, true, n)) => {
+                            if xmas[x as usize].1 > n {
+                                let mut nx = xmas;
+                                nx[x as usize].0 = nx[x as usize].0.max(n + 1);
+                                r_xmas.push((ni, nx));
+                            }
+                            xmas[x as usize].1 = n;
+                        }
+                        None => {
+                            r_xmas.push((ni, xmas));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Some(total)
+}
+
+aoc2023::solve!(parse, part1, part2);
+
+#[cfg(test)]
+mod tests {
+    use aoc2023::assert_ex;
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_ex!(parse, part1, 19114);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_ex!(parse, part2, 167409079868000);
+    }
+}
