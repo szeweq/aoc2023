@@ -1,7 +1,5 @@
 use std::collections::VecDeque;
-
 use num::Integer;
-
 
 fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
     match v.binary_search_by_key(&s, |(z, _)| z) {
