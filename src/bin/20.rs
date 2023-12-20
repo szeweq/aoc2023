@@ -62,7 +62,7 @@ pub fn part1((mv, masks, _): &Input) -> Option<u32> {
     let mut lohi = [0, 0];
     let mut q = VecDeque::new();
     for _ in 0..1000 {
-        q.push_back((0, false, None));
+        q.push_back((0, false, 0));
         while let Some((i, sig, from)) = q.pop_front() {
             lohi[sig as usize] += 1;
             if i >= mv.len() {
@@ -72,14 +72,10 @@ pub fn part1((mv, masks, _): &Input) -> Option<u32> {
             let cs = if i == 0 {
                 sig
             } else if *a {
-                if let Some(from) = from {
-                    if sig {
-                        states[i] |= 1u64 << from;
-                    } else {
-                        states[i] &= (1u64 << from) ^ u64::MAX;
-                    }
+                if sig {
+                    states[i] |= 1u64 << from;
                 } else {
-                    continue;
+                    states[i] &= (1u64 << from) ^ u64::MAX;
                 }
                 states[i] != masks[i]
             } else if !sig {
@@ -89,7 +85,7 @@ pub fn part1((mv, masks, _): &Input) -> Option<u32> {
             } else {
                 continue;
             };
-            q.extend(v.iter().map(|&ni| (ni, cs, Some(i))));
+            q.extend(v.iter().map(|&ni| (ni, cs, i)));
         }
     }
     Some(lohi[0] * lohi[1])
@@ -104,21 +100,20 @@ pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
     let ancestors_len = ancestors_rx.count_ones() as usize;
     let mut states = vec![0u64; mv.len()];
     let mut q = VecDeque::new();
-    let mut history = vec![0; mv.len()];
-    let mut counts = vec![0; mv.len()];
+    let mut history = vec![(0, 0); mv.len()];
     let mut lcm = vec![];
     for t in 0.. {
-        q.push_back((0, false, None));
+        q.push_back((0, false, 0));
         while let Some((i, sig, from)) = q.pop_front() {
             if !sig {
-                if history[i] > 0 && counts[i] == 2 && ancestors_rx & (1 << i) != 0 {
-                    lcm.push(t - history[i]);
+                if history[i].0 > 0 && history[i].1 == 2 && ancestors_rx & (1 << i) != 0 {
+                    lcm.push(t - history[i].0);
                     if lcm.len() == ancestors_len {
                         return Some(lcm.iter().fold(1u64, |acc, i| acc.lcm(i)));
                     }
                 }
-                history[i] = t;
-                counts[i] += 1;
+                history[i].0 = t;
+                history[i].1 += 1;
             }
             if i >= mv.len() {
                 // It may simply not happen.
@@ -131,14 +126,10 @@ pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
             let cs = if i == 0 {
                 sig
             } else if *a {
-                if let Some(from) = from {
-                    if sig {
-                        states[i] |= 1u64 << from;
-                    } else {
-                        states[i] &= (1u64 << from) ^ u64::MAX;
-                    }
+                if sig {
+                    states[i] |= 1u64 << from;
                 } else {
-                    continue;
+                    states[i] &= (1u64 << from) ^ u64::MAX;
                 }
                 states[i] != masks[i]
             } else if !sig {
@@ -148,7 +139,7 @@ pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
             } else {
                 continue;
             };
-            q.extend(v.iter().map(|&ni| (ni, cs, Some(i))));
+            q.extend(v.iter().map(|&ni| (ni, cs, i)));
         }
     }
     None
