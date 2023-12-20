@@ -11,8 +11,15 @@ fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
         }
     }
 }
+fn parse_next_modules<'a>(name_indices: &mut Vec<(&'a str, usize)>, p: &'a str) -> Vec<usize> {
+    let mut v = p.split(", ").map(|s| find_index(name_indices, s)).collect::<Vec<_>>();
+    v.sort_unstable();
+    v
+}
 
-fn parse_modules(input: &str) -> (Vec<(bool, Vec<usize>)>, usize) {
+type Input = (Vec<(bool, Vec<usize>)>, Vec<u64>, usize);
+
+fn parse_modules(input: &str) -> Input {
     let mut name_indices = vec![("broadcaster", 0)];
     let mut v = input.lines().map(|l| {
         let (name, points) = l.split_once(" -> ").unwrap();
@@ -33,17 +40,12 @@ fn parse_modules(input: &str) -> (Vec<(bool, Vec<usize>)>, usize) {
     v.sort_unstable_by_key(|z| z.0);
     let irx = find_index(&mut name_indices, "rx");
     let v = v.into_iter()
-        .map(|(_, a, p)| (a, p.split(", ").map(|s| find_index(&mut name_indices, s)).collect()))
-        .collect();
-    (v, irx)
-}
-
-pub fn part1(input: &str) -> Option<u32> {
-    let (mv, _) = parse_modules(input);
-    let masks = (0..mv.len()).map(|i| {
-        if mv[i].0 {
-            (0..mv.len()).fold(0u64, |mut m, j| {
-                if mv[j].1.contains(&i) {
+        .map(|(_, a, p)| (a, parse_next_modules(&mut name_indices, p)))
+        .collect::<Vec<_>>();
+    let masks = (0..v.len()).map(|i| {
+        if v[i].0 {
+            (0..v.len()).fold(0u64, |mut m, j| {
+                if v[j].1.binary_search(&i).is_ok() {
                     m |= 1 << j;
                 }
                 m
@@ -52,6 +54,10 @@ pub fn part1(input: &str) -> Option<u32> {
             0
         }
     }).collect::<Vec<_>>();
+    (v, masks, irx)
+}
+
+pub fn part1((mv, masks, _): &Input) -> Option<u32> {
     let mut states = vec![0u64; mv.len()];
     let mut lohi = [0, 0];
     let mut q = VecDeque::new();
@@ -89,26 +95,13 @@ pub fn part1(input: &str) -> Option<u32> {
     Some(lohi[0] * lohi[1])
 }
 
-pub fn part2(input: &str) -> Option<u64> {
-    let (mv, irx) = parse_modules(input);
-    let masks = (0..mv.len()).map(|i| {
-        if mv[i].0 {
-            (0..mv.len()).fold(0u64, |mut m, j| {
-                if mv[j].1.contains(&i) {
-                    m |= 1 << j;
-                }
-                m
-            })
-        } else {
-            0
-        }
-    }).collect::<Vec<_>>();
+pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
     // "rx" is not in the list. We need to find the parent node.
     let anc = mv.iter().enumerate()
-        .find_map(|(i, (_, v))| v.contains(&irx).then_some(i))?;
+        .find_map(|(i, (_, v))| v.binary_search(irx).is_ok().then_some(i))?;
     // The parent node should have multiple ancestors.
     let ancestors_rx = mv.iter().enumerate()
-        .filter_map(|(i, (_, v))| v.contains(&anc).then_some(i))
+        .filter_map(|(i, (_, v))| v.binary_search(&anc).is_ok().then_some(i))
         .collect::<Vec<_>>();
     let mut states = vec![0u64; mv.len()];
     let mut q = VecDeque::new();
@@ -129,9 +122,10 @@ pub fn part2(input: &str) -> Option<u64> {
                 return Some(lcm.iter().fold(1u64, |acc, i| acc.lcm(i)));
             }
             if i >= mv.len() {
-                if i == irx && !sig {
-                    return Some(t);
-                }
+                // It may simply not happen.
+                // if i == *irx && !sig {
+                //     return Some(t);
+                // }
                 continue;
             }
             let (a, v) = &mv[i];
@@ -161,7 +155,7 @@ pub fn part2(input: &str) -> Option<u64> {
     None
 }
 
-aoc2023::solve!(part1, part2);
+aoc2023::solve!(parse_modules, part1, part2);
 
 #[cfg(test)]
 mod tests {
@@ -170,11 +164,11 @@ mod tests {
 
     #[test]
     fn test_part1_ex1() {
-        assert_ex_part!(1, part1, 32000000);
+        assert_ex_part!(1, parse_modules, part1, 32000000);
     }
 
     #[test]
     fn test_part1_ex2() {
-        assert_ex_part!(2, part1, 11687500);
+        assert_ex_part!(2, parse_modules, part1, 11687500);
     }
 }
