@@ -100,9 +100,8 @@ pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
     let anc = mv.iter().enumerate()
         .find_map(|(i, (_, v))| v.binary_search(irx).is_ok().then_some(i))?;
     // The parent node should have multiple ancestors.
-    let ancestors_rx = mv.iter().enumerate()
-        .filter_map(|(i, (_, v))| v.binary_search(&anc).is_ok().then_some(i))
-        .collect::<Vec<_>>();
+    let ancestors_rx = masks[anc];
+    let ancestors_len = ancestors_rx.count_ones() as usize;
     let mut states = vec![0u64; mv.len()];
     let mut q = VecDeque::new();
     let mut history = vec![0; mv.len()];
@@ -112,14 +111,14 @@ pub fn part2((mv, masks, irx): &Input) -> Option<u64> {
         q.push_back((0, false, None));
         while let Some((i, sig, from)) = q.pop_front() {
             if !sig {
-                if history[i] > 0 && counts[i] == 2 && ancestors_rx.contains(&i) {
+                if history[i] > 0 && counts[i] == 2 && ancestors_rx & (1 << i) != 0 {
                     lcm.push(t - history[i]);
+                    if lcm.len() == ancestors_len {
+                        return Some(lcm.iter().fold(1u64, |acc, i| acc.lcm(i)));
+                    }
                 }
                 history[i] = t;
                 counts[i] += 1;
-            }
-            if lcm.len() == ancestors_rx.len() {
-                return Some(lcm.iter().fold(1u64, |acc, i| acc.lcm(i)));
             }
             if i >= mv.len() {
                 // It may simply not happen.
