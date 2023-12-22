@@ -39,23 +39,26 @@ fn part1(input: &str, steps: usize) -> Option<usize> {
     let (g, start) = parse_grid(input);
     let odd_bit = steps & 1;
     let mut checked = g.data.iter().map(|c| *c == b'#').collect::<Vec<_>>();
-    let (mut set, mut set_next) = (HashSet::new(), HashSet::new());
+    let (mut set, mut set_next) = (Vec::new(), Vec::new());
     let mut reach = 0;
-    set.insert(start);
+    checked[start] = true;
+    set.push(start);
     for st in 0..=steps {
-        for p in set.drain() {
-            checked[p] = true;
+        for &p in &set {
+            //checked[p] = true;
             if st & 1 == odd_bit {
                 reach += 1;
             }
             for dir in 0..4 {
                 if let Some(np) = g.next_pos(p, dir) {
                     if !checked[np] {
-                        set_next.insert(np);
+                        checked[np] = true;
+                        set_next.push(np);
                     }
                 }
             }
         }
+        set.clear();
         std::mem::swap(&mut set, &mut set_next);
     }
     Some(reach)
