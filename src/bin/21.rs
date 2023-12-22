@@ -68,13 +68,16 @@ pub fn part1_test(input: &str) -> Option<usize> {
     part1(input, 6)
 }
 
-fn walk_wrapped(g: &Grid, start: usize, steps: usize) -> usize {
-    let odd_bit = steps & 1;
+fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [usize; N] {
+    let mut vw = [0; N];
     let mut checked = HashSet::new();
     let (mut set, mut set_next) = (HashSet::new(), HashSet::new());
     let mut reach = HashSet::new();
     set.insert([(start % g.offset) as isize, (start / g.offset) as isize]);
-    for st in 0..=steps {
+    let mut st = 0;
+    let odd_bit = steps[0] & 1;
+    let mut si = 0;
+    while si < steps.len() {
         for p in set.drain() {
             checked.insert(p);
             if st & 1 == odd_bit {
@@ -93,23 +96,27 @@ fn walk_wrapped(g: &Grid, start: usize, steps: usize) -> usize {
             }
         }
         std::mem::swap(&mut set, &mut set_next);
+        st += 1;
+        if st == steps[si]+1 {
+            vw[si] = reach.len();
+            si += 1;
+        }
     }
-    reach.len()
+    vw
 }
 
-fn part2(input: &str, steps: usize, diamond: bool) -> Option<usize> {
+fn part2(input: &str) -> Option<usize> {
+    const STEPS: usize = 26501365;
     let (g, start) = parse_grid(input);
-    if !diamond {
-        return Some(walk_wrapped(&g, start, steps));
-    }
     let vx = [g.offset / 2, 3 * g.offset / 2, 5 * g.offset / 2];
+    let vy = walk_wrapped(&g, start, &vx);
     // Use Lagrange polynomial
     let mut result = 0.0;
     for i in 0..3 {
-        let mut term = walk_wrapped(&g, start, vx[i]) as f64;
+        let mut term = vy[i] as f64;
         for j in 0..3 {
             if i != j {
-                let num = steps as f64 - vx[j] as f64;
+                let num = (STEPS - vx[j]) as f64;
                 let den = vx[i] as f64 - vx[j] as f64;
                 term *= num / den;
             }
@@ -119,32 +126,12 @@ fn part2(input: &str, steps: usize, diamond: bool) -> Option<usize> {
     Some(result as usize)
 }
 
-pub fn part2_solve(input: &str) -> Option<usize> {
-    part2(input, 26501365, true)
-}
-pub fn part2_test(input: &str) -> Option<usize> {
-    part2(input, 6, false)
-}
-pub fn part2_test2(input: &str) -> Option<usize> {
-    part2(input, 10, false)
-}
-pub fn part2_test3(input: &str) -> Option<usize> {
-    part2(input, 50, false)
-}
-pub fn part2_test4(input: &str) -> Option<usize> {
-    part2(input, 100, false)
-}
-pub fn part2_test5(input: &str) -> Option<usize> {
-    part2(input, 500, false)
-}
-pub fn part2_test6(input: &str) -> Option<usize> {
-    part2(input, 1000, false)
-}
-pub fn part2_test7(input: &str) -> Option<usize> {
-    part2(input, 5000, false)
+pub fn part2_test(input: &str) -> Option<[usize; 6]> {
+    let (g, start) = parse_grid(input);
+    Some(walk_wrapped(&g, start, &[6, 10, 50, 100, 500, 1000]))
 }
 
-aoc2023::solve!(part1_solve, part2_solve);
+aoc2023::solve!(part1_solve, part2);
 
 #[cfg(test)]
 mod tests {
@@ -158,37 +145,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2_test, 16);
-    }
-
-    #[test]
-    fn test_part2_2() {
-        assert_ex!(part2_test2, 50);
-    }
-
-    #[test]
-    fn test_part2_3() {
-        assert_ex!(part2_test3, 1594);
-    }
-
-    #[test]
-    fn test_part2_4() {
-        assert_ex!(part2_test4, 6536);
-    }
-
-    #[test]
-    fn test_part2_5() {
-        assert_ex!(part2_test5, 167004);
-    }
-
-    #[test]
-    fn test_part2_6() {
-        assert_ex!(part2_test6, 668697);
-    }
-
-    #[test]
-    fn test_part2_7() {
-        // Takes a long time
-        assert_ex!(part2_test7, 16733044);
+        assert_ex!(part2_test, [16, 50, 1594, 6536, 167004, 668697]);
     }
 }
