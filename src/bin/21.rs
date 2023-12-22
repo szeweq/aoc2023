@@ -45,7 +45,6 @@ fn part1(input: &str, steps: usize) -> Option<usize> {
     set.push(start);
     for st in 0..=steps {
         for &p in &set {
-            //checked[p] = true;
             if st & 1 == odd_bit {
                 reach += 1;
             }
@@ -74,15 +73,16 @@ pub fn part1_test(input: &str) -> Option<usize> {
 fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [usize; N] {
     let mut vw = [0; N];
     let mut checked = HashSet::new();
-    let (mut set, mut set_next) = (HashSet::new(), HashSet::new());
+    let (mut set, mut set_next) = (Vec::new(), Vec::new());
     let mut reach = HashSet::new();
-    set.insert([(start % g.offset) as isize, (start / g.offset) as isize]);
+    let sp = [(start % g.offset) as isize, (start / g.offset) as isize];
+    checked.insert(sp);
+    set.push(sp);
     let mut st = 0;
     let odd_bit = steps[0] & 1;
     let mut si = 0;
     while si < steps.len() {
-        for p in set.drain() {
-            checked.insert(p);
+        for &p in &set {
             if st & 1 == odd_bit {
                 reach.insert(p);
             }
@@ -93,11 +93,12 @@ fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [
                 if g.data[y * g.offset + x] == b'#' {
                     continue;
                 }
-                if !checked.contains(&np) {
-                    set_next.insert(np);
+                if checked.insert(np) {
+                    set_next.push(np);
                 }
             }
         }
+        set.clear();
         std::mem::swap(&mut set, &mut set_next);
         st += 1;
         if st == steps[si]+1 {
