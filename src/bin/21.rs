@@ -104,11 +104,10 @@ fn part2(input: &str, steps: usize, diamond: bool) -> Option<usize> {
     }
     let vx = [g.offset / 2, 3 * g.offset / 2, 5 * g.offset / 2];
     // Use Lagrange polynomial
-    let n = vx.len();
     let mut result = 0.0;
-    for i in 0..n {
+    for i in 0..3 {
         let mut term = walk_wrapped(&g, start, vx[i]) as f64;
-        for j in 0..n {
+        for j in 0..3 {
             if i != j {
                 let num = steps as f64 - vx[j] as f64;
                 let den = vx[i] as f64 - vx[j] as f64;
