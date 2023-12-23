@@ -16,7 +16,7 @@ impl Grid {
     const fn next_pos(&self, p: usize, dir: u8) -> Option<usize> {
         // 0 = up, 1 = right, 2 = down, 3 = left
         Some(match dir {
-            0 if p > self.offset => p - self.offset,
+            0 if p >= self.offset => p - self.offset,
             1 if (p + 1) % self.offset != 0 => p + 1,
             2 if p < self.data.len() - self.offset => p + self.offset,
             3 if p % self.offset != 0 => p - 1,
