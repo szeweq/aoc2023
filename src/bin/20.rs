@@ -154,11 +154,11 @@ mod tests {
 
     #[test]
     fn test_part1_ex1() {
-        assert_ex_part!(1, parse_modules, part1, 32000000);
+        assert_ex_part!(1, parse_modules, part1, 32_000_000);
     }
 
     #[test]
     fn test_part1_ex2() {
-        assert_ex_part!(2, parse_modules, part1, 11687500);
+        assert_ex_part!(2, parse_modules, part1, 11_687_500);
     }
 }

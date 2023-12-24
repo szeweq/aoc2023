@@ -140,6 +140,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2, 467835);
+        assert_ex!(part2, 467_835);
     }
 }

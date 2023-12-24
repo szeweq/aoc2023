@@ -45,7 +45,7 @@ pub fn part1(grid: &Grid) -> Option<usize> {
 }
 
 pub fn part2(grid: &Grid) -> Option<usize> {
-    solve(grid, 999999)
+    solve(grid, 999_999)
 }
 
 pub fn test_part2_with_10(grid: &Grid) -> Option<usize> {

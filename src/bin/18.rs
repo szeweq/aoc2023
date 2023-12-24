@@ -64,6 +64,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_ex_opt!(part2, NonZeroU64::new(952408144115));
+        assert_ex_opt!(part2, NonZeroU64::new(952_408_144_115));
     }
 }
