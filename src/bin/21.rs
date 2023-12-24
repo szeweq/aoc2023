@@ -35,7 +35,7 @@ pub fn parse_grid(s: &str) -> (Grid, usize) {
     (g, start)
 }
 
-fn part1(input: &str, steps: usize) -> Option<usize> {
+fn part1(input: &str, steps: usize) -> usize {
     let (g, start) = parse_grid(input);
     let odd_bit = steps & 1;
     let mut checked = g.data.iter().map(|c| *c == b'#').collect::<Vec<_>>();
@@ -60,14 +60,14 @@ fn part1(input: &str, steps: usize) -> Option<usize> {
         set.clear();
         std::mem::swap(&mut set, &mut set_next);
     }
-    Some(reach)
+    reach
 }
 
 pub fn part1_solve(input: &str) -> Option<usize> {
-    part1(input, 64)
+    Some(part1(input, 64))
 }
 pub fn part1_test(input: &str) -> Option<usize> {
-    part1(input, 6)
+    Some(part1(input, 6))
 }
 
 fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [usize; N] {
@@ -110,7 +110,7 @@ fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [
 }
 
 fn part2(input: &str) -> Option<usize> {
-    const STEPS: usize = 26501365;
+    const STEPS: usize = 26_501_365;
     let (g, start) = parse_grid(input);
     let vx = [g.offset / 2, 3 * g.offset / 2, 5 * g.offset / 2];
     let vy = walk_wrapped(&g, start, &vx);
@@ -149,6 +149,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_ex!(part2_test, [16, 50, 1594, 6536, 167004, 668697]);
+        assert_ex!(part2_test, [16, 50, 1594, 6536, 167_004, 668_6977]);
     }
 }
