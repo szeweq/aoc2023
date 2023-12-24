@@ -16,3 +16,7 @@ codegen-units = 1
 [lints.clippy]
 nursery = "warn"
 must_use_candidate = "allow"
+cast_possible_truncation = "allow"
+cast_lossless = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
