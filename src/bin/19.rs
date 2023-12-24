@@ -58,7 +58,7 @@ pub fn part1(&(ref rv, ref xv, iin): &Input) -> Option<u64> {
     for xmas in xv {
         let mut i = iin;
         while i >= 2 {
-            for &(a, ni) in rv[i - 2].iter() {
+            for &(a, ni) in &rv[i - 2] {
                 let ma = match a {
                     Some((x, false, n)) => xmas[x as usize] < n,
                     Some((x, true, n)) => xmas[x as usize] > n,
@@ -87,7 +87,7 @@ pub fn part2(&(ref rv, _, iin): &Input) -> Option<u64> {
                 total += xmas.into_iter().fold(1u64, |acc, x| acc * (x.1 - x.0 + 1) as u64);
             }
             _ => {
-                for &(a, ni) in rv[i - 2].iter() {
+                for &(a, ni) in &rv[i - 2] {
                     match a {
                         Some((x, false, n)) => {
                             if xmas[x as usize].0 < n {
@@ -130,6 +130,6 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        assert_ex!(parse, part2, 167409079868000);
+        assert_ex!(parse, part2, 167_409_079_868_000);
     }
 }
