@@ -1,37 +1,9 @@
 use std::collections::HashSet;
+use aoc2023::util;
 
-
-pub struct Grid {
-    data: Box<[u8]>,
-    offset: usize,
-}
-impl Grid {
-    fn from_str(s: &str) -> Self {
-        let mut lines = s.lines().peekable();
-        let line_len = lines.peek().map_or(0, |l| l.len());
-        Self {
-            data: lines.flat_map(str::as_bytes).copied().collect::<Box<_>>(),
-            offset: line_len,
-        }
-    }
-    const fn next_pos(&self, p: usize, dir: u8) -> Option<usize> {
-        // 0 = up, 1 = right, 2 = down, 3 = left
-        Some(match dir {
-            0 if p >= self.offset => p - self.offset,
-            1 if (p + 1) % self.offset != 0 => p + 1,
-            2 if p < self.data.len() - self.offset => p + self.offset,
-            3 if p % self.offset != 0 => p - 1,
-            _ => { return None }
-        })
-    }
-    const fn find_s(&self) -> usize {
-        self.data.len() / 2
-    }
-}
-
-pub fn parse_grid(s: &str) -> (Grid, usize) {
-    let g = Grid::from_str(s);
-    let start = g.find_s();
+pub fn parse_grid(s: &str) -> (util::Grid, usize) {
+    let g = util::Grid::from_data(s);
+    let start = g.data.len() / 2;
     (g, start)
 }
 
@@ -70,7 +42,7 @@ pub fn part1_test(input: &str) -> Option<usize> {
     Some(part1(input, 6))
 }
 
-fn walk_wrapped<const N: usize>(g: &Grid, start: usize, steps: &[usize; N]) -> [usize; N] {
+fn walk_wrapped<const N: usize>(g: &util::Grid, start: usize, steps: &[usize; N]) -> [usize; N] {
     let mut vw = [0; N];
     let mut checked = HashSet::new();
     let (mut set, mut set_next) = (Vec::new(), Vec::new());
