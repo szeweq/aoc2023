@@ -62,7 +62,7 @@ fn path_len(diagram: &[Vec<usize>], q: &mut VecDeque<usize>, from: usize, ecut: 
     q.push_back(from);
     while let Some(i) = q.pop_front() {
         for &j in &diagram[i] {
-            if !visited[j] && !ecut.contains(&(i, j)) && !ecut.contains(&(j, i)) {
+            if !visited[j] && !ecut.iter().any(|&x| x == (i, j) || x == (j, i)) {
                 visited[j] = true;
                 cnt += 1;
                 q.push_back(j);
@@ -104,9 +104,20 @@ pub fn part1(input: &str) -> Option<usize> {
             }
         }
         if i % 20 == 0 {
-            let mut copy_a_to_b = a_to_b.clone();
-            copy_a_to_b.sort_unstable_by_key(|x| std::cmp::Reverse(x.2));
-            let ecut = copy_a_to_b[..3].iter().map(|x| (x.0, x.1)).collect::<Vec<_>>();
+            let mut m3 = [(0, 0, 0); 3];
+            for &a2b in &a_to_b {
+                if m3[0].2 < a2b.2 {
+                    m3[2] = m3[1];
+                    m3[1] = m3[0];
+                    m3[0] = a2b;
+                } else if m3[1].2 < a2b.2 {
+                    m3[2] = m3[1];
+                    m3[1] = a2b;
+                } else if m3[2].2 < a2b.2 {
+                    m3[2] = a2b;
+                }
+            }
+            let ecut = [(m3[0].0, m3[0].1), (m3[1].0, m3[1].1), (m3[2].0, m3[2].1)];
             let la = path_len(&diagram, &mut dq, ecut[0].0, &ecut);
             let lb = path_len(&diagram, &mut dq, ecut[1].0, &ecut);
             if la + lb == diagram.len() {
