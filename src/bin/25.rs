@@ -1,26 +1,16 @@
 use std::collections::VecDeque;
-
 use rand::prelude::*;
 
-fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
-    match v.binary_search_by_key(&s, |(z, _)| z) {
-        Ok(i) => v[i].1,
-        Err(ins) => {
-            let i = v.len();
-            v.insert(ins, (s, i));
-            i
-        }
-    }
-}
+use aoc2023::util;
 
 fn parse_diagram(input: &str) -> Vec<Vec<usize>> {
-    let mut name_indices = vec![];
+    let mut name_idx = util::NameIndex::new(vec![]);
     let dv = input.lines().map(|l| {
-        let index = find_index(&mut name_indices, &l[..3]);
-        let conns = l[5..].split_ascii_whitespace().map(|s| find_index(&mut name_indices, s)).collect::<Vec<_>>();
+        let index = name_idx.find(&l[..3]);
+        let conns = l[5..].split_ascii_whitespace().map(|s| name_idx.find(s)).collect::<Vec<_>>();
         (index, conns)
     }).collect::<Vec<_>>();
-    let mut di = vec![vec![]; name_indices.len()];
+    let mut di = vec![vec![]; name_idx.len()];
     for (i, con) in dv {
         for j in con {
             di[i].push(j);
@@ -52,7 +42,6 @@ fn path2(diagram: &[Vec<usize>], q: &mut VecDeque<usize>, a: usize, b: usize) ->
         i = hist[i];
     }
     v.push(a);
-    v.reverse();
     v
 }
 

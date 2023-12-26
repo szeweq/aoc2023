@@ -1,27 +1,17 @@
-
-fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
-    match v.binary_search_by_key(&s, |(z, _)| z) {
-        Ok(i) => v[i].1,
-        Err(ins) => {
-            let i = v.len();
-            v.insert(ins, (s, i));
-            i
-        }
-    }
-}
+use aoc2023::util;
 
 type Input = (Vec<Vec<(Option<(u8, bool, u16)>, usize)>>, Vec<[u16; 4]>, usize);
 
 pub fn parse(input: &str) -> Input {
     let mut il = input.lines();
     let mut rv = vec![];
-    let mut name_indices = vec![("A", 1), ("R", 0)];
+    let mut name_idx = util::NameIndex::new(vec![("A", 1), ("R", 0)]);
     for l in il.by_ref().take_while(|l| !l.is_empty()) {
         let (name, data) = l.split_once('{').unwrap();
-        let ln = find_index(&mut name_indices, name);
+        let ln = name_idx.find(name);
         let uv = data.split(',').map(|s| {
             if let Some(s) = s.strip_suffix('}') {
-                (None, find_index(&mut name_indices, s))
+                (None, name_idx.find(s))
             } else {
                 let sb = s.as_bytes();
                 let (a, b) = (sb[0], sb[1]);
@@ -34,7 +24,7 @@ pub fn parse(input: &str) -> Input {
                 };
                 let (n, x) = s[2..].split_once(':').unwrap();
                 let n = n.parse::<u16>().expect(n);
-                (Some((a, b == b'>', n)), find_index(&mut name_indices, x))
+                (Some((a, b == b'>', n)), name_idx.find(x))
             }
         }).collect();
         rv.push((ln, uv));
@@ -49,7 +39,7 @@ pub fn parse(input: &str) -> Input {
         }
         xmas
     }).collect();
-    let iin = find_index(&mut name_indices, "in");
+    let iin = name_idx.find("in");
     (fixed_rv, xv, iin)
 }
 

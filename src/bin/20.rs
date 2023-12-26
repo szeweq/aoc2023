@@ -1,18 +1,10 @@
 use std::collections::VecDeque;
 use num::Integer;
 
-fn find_index<'a>(v: &mut Vec<(&'a str, usize)>, s: &'a str) -> usize {
-    match v.binary_search_by_key(&s, |(z, _)| z) {
-        Ok(i) => v[i].1,
-        Err(ins) => {
-            let i = v.len();
-            v.insert(ins, (s, i));
-            i
-        }
-    }
-}
-fn parse_next_modules<'a>(name_indices: &mut Vec<(&'a str, usize)>, p: &'a str) -> Vec<usize> {
-    let mut v = p.split(", ").map(|s| find_index(name_indices, s)).collect::<Vec<_>>();
+use aoc2023::util;
+
+fn parse_next_modules<'a>(name_idx: &mut util::NameIndex<'a>, p: &'a str) -> Vec<usize> {
+    let mut v = p.split(", ").map(|s| name_idx.find(s)).collect::<Vec<_>>();
     v.sort_unstable();
     v
 }
@@ -20,7 +12,7 @@ fn parse_next_modules<'a>(name_indices: &mut Vec<(&'a str, usize)>, p: &'a str) 
 type Input = (Vec<(bool, Vec<usize>)>, Vec<u64>, usize);
 
 fn parse_modules(input: &str) -> Input {
-    let mut name_indices = vec![("broadcaster", 0)];
+    let mut name_idx = util::NameIndex::new(vec![("broadcaster", 0)]);
     let mut v = input.lines().map(|l| {
         let (name, points) = l.split_once(" -> ").unwrap();
         let (i, a) = if name == "broadcaster" {
@@ -32,15 +24,15 @@ fn parse_modules(input: &str) -> Input {
                 b'&' => true,
                 _ => unreachable!(),
             };
-            let name = find_index(&mut name_indices, &name[1..]);
+            let name = name_idx.find(&name[1..]);
             (name, a)
         };
         (i, a, points)
     }).collect::<Vec<_>>();
     v.sort_unstable_by_key(|z| z.0);
-    let irx = find_index(&mut name_indices, "rx");
+    let irx = name_idx.find("rx");
     let v = v.into_iter()
-        .map(|(_, a, p)| (a, parse_next_modules(&mut name_indices, p)))
+        .map(|(_, a, p)| (a, parse_next_modules(&mut name_idx, p)))
         .collect::<Vec<_>>();
     let masks = (0..v.len()).map(|i| {
         if v[i].0 {

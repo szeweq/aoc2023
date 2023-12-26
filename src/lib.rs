@@ -1,5 +1,7 @@
 use std::{fs, fmt, string, time};
 
+pub mod util;
+
 pub fn read_file_string(fname: &str) -> Box<str> {
     fs::read_to_string(fname).map(string::String::into_boxed_str).unwrap()
 }
