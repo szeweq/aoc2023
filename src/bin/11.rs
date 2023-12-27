@@ -1,25 +1,13 @@
+use aoc2023::util::Grid;
 
-pub struct Grid {
-    data: Box<[u8]>,
-    offset: usize,
-}
-impl Grid {
-    fn from_str(s: &str) -> Self {
-        let mut lines = s.lines().peekable();
-        let line_len = lines.peek().map_or(0, |l| l.len());
-        Self {
-            data: lines.flat_map(str::as_bytes).copied().collect::<Box<_>>(),
-            offset: line_len,
-        }
-    }
-    fn find_pos(&self) -> Vec<[usize; 2]> {
-        self.data.iter().enumerate().filter_map(|(i, &c)| {
-            (c == b'#').then_some([i % self.offset, i / self.offset])
-        }).collect()
-    }
-}
 fn parse_grid(input: &str) -> Grid {
-    Grid::from_str(input)
+    Grid::from_data(input)
+}
+
+fn find_pos(grid: &Grid) -> Vec<[usize; 2]> {
+    grid.data.iter().enumerate().filter_map(|(i, &c)| {
+        (c == b'#').then_some([i % grid.offset, i / grid.offset])
+    }).collect()
 }
 
 fn space_points(vpos: &mut [[usize; 2]], w: usize, h: usize, sz: usize) {
@@ -33,7 +21,7 @@ fn space_points(vpos: &mut [[usize; 2]], w: usize, h: usize, sz: usize) {
 }
 
 pub fn solve(grid: &Grid, sz: usize) -> Option<usize> {
-    let mut vpos = grid.find_pos();
+    let mut vpos = find_pos(grid);
     space_points(&mut vpos, grid.offset, grid.data.len() / grid.offset, sz);
     Some(vpos.iter().enumerate().flat_map(|(i, &[x1, y1])| {
         vpos.iter().skip(i + 1).map(move |&[x2, y2]| x2.abs_diff(x1) + y2.abs_diff(y1))
