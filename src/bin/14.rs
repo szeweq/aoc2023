@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 
 type Pt = [u32; 2];
 pub struct Grid {
@@ -123,34 +121,36 @@ fn collapse_cycle(vr: &mut [Pt], vc: &[Pt], lx: u32, ly: u32) {
     collapse_east(vr, vc, lx);
 }
 
-fn calc_damage(vr: Vec<Pt>, h: u32) -> u32 {
-    vr.into_iter().map(|r| h - r[0]).sum()
+fn calc_damage(vr: &[Pt], h: u32) -> u32 {
+    vr.iter().map(|r| h - r[0]).sum()
 }
 
 pub fn part1(input: &str) -> Option<u32> {
     let grid = Grid::from_str(input);
     let (mut round_rocks, cube_rocks) = grid.find_rocks();
     collapse_north(&mut round_rocks, &cube_rocks);
-    Some(calc_damage(round_rocks, (grid.data.len() / grid.offset) as u32))
+    Some(calc_damage(&round_rocks, (grid.data.len() / grid.offset) as u32))
 }
 
 pub fn part2(input: &str) -> Option<u32> {
     let grid = Grid::from_str(input);
     let (w, h) = (grid.offset as u32, (grid.data.len() / grid.offset) as u32);
     let (mut round_rocks, cube_rocks) = grid.find_rocks();
-    let mut map = HashMap::new();
-    map.insert(round_rocks.clone(), 0);
-    for i in 1.. {
+    let cstart;
+    let mut map = Vec::new();
+    map.push(round_rocks.clone());
+    loop {
         collapse_cycle(&mut round_rocks, &cube_rocks, w - 1, h - 1);
-        if map.contains_key(&round_rocks) {
+        if let Some(i) = map.iter().rposition(|r| r == &round_rocks) {
+            cstart = i;
             break;
         }
-        map.insert(round_rocks.clone(), i);
+        map.push(round_rocks.clone());
     }
-    let cstart = map[&round_rocks];
     let cycle_len = map.len() - cstart;
     let ckey = (1_000_000_000 - cstart) % cycle_len + cstart;
-    map.into_iter().find(|(_, i)| *i == ckey).map(|(v, _)| calc_damage(v, h))
+    Some(calc_damage(&map[ckey], h))
+    //map.into_iter().find(|(_, i)| *i == ckey).map(|(v, _)| calc_damage(v, h))
 }
 
 aoc2023::solve!(part1, part2);
