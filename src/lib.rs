@@ -2,11 +2,13 @@ use std::{fs, fmt, string, time};
 
 pub mod util;
 
+#[inline]
 pub fn read_file_string(fname: &str) -> Box<str> {
     fs::read_to_string(fname).map(string::String::into_boxed_str).unwrap()
 }
 
 #[allow(clippy::option_if_let_else)]
+#[inline]
 pub fn print_result<P, T: fmt::Display>(part: u32, func: fn(P) -> Option<T>, input: P) {
     let tim = time::Instant::now();
     let result = func(input);
